@@ -14,8 +14,36 @@
     <script src="lib/stats.min.js"></script>
     <script src="lib/dat.gui.js"></script>
 	
+	<script src="glMatrix-0.9.5.min.js"></script>
+	
+	<script id="massSpring-SpringVP" type="x-shader/x-vertex">
+	    attribute vec3 aVertexPosition;
+
+	    uniform mat4 uMVMatrix;
+	    uniform mat4 uPMatrix;
+
+	    void main(void) {
+	        gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+	    }
+	</script>
+		
+	<script id="shader-fs" type="x-shader/x-fragment">
+	    precision mediump float;
+
+	    void main(void) {
+	        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+	    }
+	</script>
 	<script src="js/main.js"></script>
 	<script src="js/BasicTry.js"></script>
+	
+	<script>
+	window.onload = function () 
+	{
+		mainInit();
+	}
+	</script>
+	
     <style>
       html, body { margin: 0; padding: 0; overflow: hidden; }
     </style>
