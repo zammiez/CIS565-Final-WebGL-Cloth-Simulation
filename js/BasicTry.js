@@ -12,6 +12,7 @@ var vboID_PrePos = [];
 var vboIndices;
 var texPosID = [];
 var texPrePosID = [];
+var tfID;
 
 window.requestAnimFrame =
     window.requestAnimationFrame ||
@@ -65,13 +66,13 @@ window.requestAnimFrame =
 			ext.bindVertexArrayOES(vaoUpdateID[i]);
 			
 			gl.bindBuffer(gl.ARRAY_BUFFER, vboID_Pos[i]);
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW); 
+			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(indices), gl.STATIC_DRAW); 
 			gl.enableVertexAttribArray(0);
 			gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);//? what para... 3 or 4???? really confused.
 			//gl.vertexAttribPointer(prog.a_position,3,gl.FLOAT,false,0,0);
 			
 			gl.bindBuffer(gl.ARRAY_BUFFER, vboID_PrePos[i]);
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW); 
+			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(indices), gl.STATIC_DRAW); 
 			gl.enableVertexAttribArray(1);
 			gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);//? what para: 3 or 4?
 			ext.bindVertexArrayOES(null);
@@ -90,7 +91,8 @@ window.requestAnimFrame =
 				gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Float32Array(indices),gl.STATIC_DRAW);//???!!! indices
 		}
 		
-		//5. Create Grid VAO/VBO		 
+		//5. Create Grid VAO/VBO	
+		//!!! TO BE FINISHED	 
 	}	
 	
 	var InitGL = function()
@@ -167,6 +169,8 @@ window.requestAnimFrame =
 	    massSpringShader.prog.mvMatrixUniform = gl.getUniformLocation(massSpringShader.prog, "uMVMatrix");
 		
 		createVBO(gl);
+		
+		gl.createTransformFeedback(1,tfID);
 		//1. fill in positions
 		//2. fill in indices
 		//3. disable vsync & setup springs
@@ -200,11 +204,11 @@ window.requestAnimFrame =
 		    mat4.translate(mvMatrix, [-1.5, 0.0, -7.0]);
 			
 			//ext.bindVertexArrayOES(vaoRenderID[0]); 
-			ext.bindVertexArrayOES(vaoUpdateID[0]); 
+			ext.bindVertexArrayOES(vaoUpdateID[1]); 
 			setMatrixUniforms(shaderProgram);
 		    //gl.drawElements(gl.TRIANGLES, 1, gl.UNSIGNED_SHORT, 0);  
 			//gl.drawArrays(gl.TRIANGLES, 0, 3);
-		    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 3);
+		    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 			
 			//debugger;
 			ext.bindVertexArrayOES(null);  
