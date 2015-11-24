@@ -3,18 +3,19 @@
  */
 
 
-var GPGPU2 = function (renderer) {
+var GPGPU2 = function (renderer,cloth_w,cloth_h) {
     var gl = renderer.context;
     var transformFeedback = gl.createTransformFeedback();
-    var arrBuffer = new ArrayBuffer(100 * 100 * 4 * 4);
-    var posData = new Float32Array(100 * 100 * 4);
-    var prevposData = new Float32Array(100 * 100 * 4);
+    var arrBuffer = new ArrayBuffer(cloth_w * cloth_h * 4 * 4);
+    var posData = new Float32Array(cloth_w * cloth_h * 4);
+    var prevposData = new Float32Array(cloth_w * cloth_h * 4);
     this.init = function (data)
     {
         posData = new Float32Array(data);
         prevposData = new Float32Array(data);
     }
     this.pass = function (shader, source, target) {
+        debugger;
         var sourceAttrib = source.attributes['position'];
         if (target.attributes['position'].buffer && sourceAttrib.buffer) {
 
@@ -39,8 +40,6 @@ var GPGPU2 = function (renderer) {
             gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, transformFeedback);
             gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, target.attributes['position'].buffer);
             gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 1, target.attributes['prev_pos'].buffer);
-            //var temp = new Float32Array(100*100*4);
-            //gl.getBufferSubData(gl.TRANSFORM_FEEDBACK_BUFFER, temp, target.attributes['position'].buffer);
 
             gl.enable(gl.RASTERIZER_DISCARD);
             gl.beginTransformFeedback(gl.POINTS);

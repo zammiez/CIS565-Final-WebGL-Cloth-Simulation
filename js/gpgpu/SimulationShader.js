@@ -5,25 +5,33 @@
 function simulationCommon() {
     return [
       'uniform float u_timer;',
+      'uniform float u_clothWidth;',
+      'uniform float u_clothHeight;',
+
+      'uniform float mass;',
+      'uniform vec2 Str;',
+      'uniform vec2 Shr;',
+      'uniform vec2 Bnd;',
+
       'uniform sampler2D u_texPos;',
       'uniform sampler2D u_texPrevPos;',
       'float DAMPING = -0.0125;',
       'vec2 getNeighbor(int n, out float ks, out float kd)',
   '{',
   //structural springs (adjacent neighbors)
-  '	if (n < 4){ ks = 50.75; kd = -0.25; }',	//ksStr, kdStr
+  '	if (n < 4){ ks = Str[0]; kd = Str[1]; }',	//ksStr, kdStr
   '	if (n == 0)	return vec2(1.0, 0.0);',
   '	if (n == 1)	return vec2(0.0, -1.0);',
   '	if (n == 2)	return vec2(-1.0, 0.0);',
   '	if (n == 3)	return vec2(0.0, 1.0);',
 //shear springs (diagonal neighbors)
-'if (n<8) { ks = 50.75; kd = -0.25; } ',//ksShr,kdShr
+'if (n<8) { ks = Shr[0]; kd = Shr[1]; } ',//ksShr,kdShr
 'if (n == 4) return vec2(1.0, -1.0);',
 'if (n == 5) return vec2(-1.0, -1.0);',
 'if (n == 6) return vec2(-1.0, 1.0);',
 'if (n == 7) return vec2(1.0, 1.0);',
 //bend spring (adjacent neighbors 1 node away)
-'if (n<12) { ks =50.75; kd = -0.25; }', //ksBnd,kdBnd
+'if (n<12) { ks =Bnd[0]; kd = Bnd[1]; }', //ksBnd,kdBnd
 'if (n == 8)	return vec2(2.0, 0.0);',
 'if (n == 9) return vec2(0.0, -2.0);',
 'if (n == 10) return vec2(-2.0, 0.0);',
@@ -32,12 +40,12 @@ function simulationCommon() {
   '}',
 
       'vec4 runSimulation(vec4 pos,float v_id) {',
-      'float mass = 1.0;',
-      'float xid = float( int(v_id)/100);',
-      'float yid = v_id - 100.0*xid;',
+      //'float mass = 0.5;',
+      'float xid = float( int(v_id)/int(u_clothWidth));',
+      'float yid = v_id - u_clothWidth*xid;',
       'vec2 coord;',
-      'coord = vec2(yid,99.0-xid)*(1.0/100.0);',
-      'float timestep = 1.0/600.0;//u_timer/100.0;',
+      'coord = vec2(yid,u_clothWidth-1.0-xid)*(1.0/u_clothWidth);',
+      'float timestep = u_timer;',
       ' vec4 texPos = texture2D(u_texPos,coord);',
       ' vec4 texPrevPos = texture2D(u_texPrevPos,coord);',
       'vec3 F = vec3(0.0);',
@@ -53,14 +61,14 @@ function simulationCommon() {
   '{',
   '	vec2 nCoord = getNeighbor(k, ks, kd);',
 
-  '	float inv_cloth_size = 1.0 / (100.0);//size of a single patch in world space',
+  '	float inv_cloth_size = 1.0 / (u_clothWidth);//size of a single patch in world space',
   '	float rest_length = length(nCoord*inv_cloth_size);',
 
   '	float nxid = xid + nCoord.x;',
   '	float nyid = yid + nCoord.y;',
-  '	if (nxid < 0.0 || nxid>99.0 || nyid<0.0 || nyid>99.0) continue;',
+  '	if (nxid < 0.0 || nxid>(u_clothWidth-1.0) || nyid<0.0 || nyid>(u_clothWidth-1.0)) continue;',
 
-  '	nCoord = vec2(nyid,99.0-nxid) / 100.0;',
+  '	nCoord = vec2(nyid,u_clothWidth-1.0-nxid) / u_clothWidth;',
   '	vec3 posNP = texture2D(u_texPos, nCoord).xyz;',
   '	vec3 prevNP = texture2D(u_texPrevPos, nCoord).xyz;',
 
@@ -75,12 +83,10 @@ function simulationCommon() {
   '	F += springForce;',
   '};',
 
-
-
       'vec3 acc = F/mass;', // acc = F/m
 
       'vel = vel+ acc*timestep;',//v = v0+a*t
-      'if(((xid>=95.0)||(xid<=5.0))&&(yid<=5.0)); else pos.xyz+=vel;//pos.x -= 0.01;',
+      'if(((xid>=0.95*u_clothWidth)||(xid<=0.05*u_clothWidth))&&(yid<=0.05*u_clothWidth)); else pos.xyz+=vel;//pos.x -= 0.01;',
       // pos = 2*pos-prevpos+acc*dt*dt
       //else pos.xyz = 2.0*pos.xyz-texPrevPos.xyz+acc*timestep*timestep;//
       //'if(texPos.xyz==pos.xyz); else pos.x -= 0.01;',
@@ -88,7 +94,7 @@ function simulationCommon() {
       '}',
     ].join('\n');
 }
-GPGPU2.SimulationShader2 = function (renderer) {
+GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
   var gl = renderer.context;
 
   var attributes = {
@@ -188,6 +194,8 @@ GPGPU2.SimulationShader2 = function (renderer) {
   }
 
   var timerValue = 0;
+  var cWidth = c_w;
+  var cHeight = c_h;
 
   return {
     program: program,
@@ -207,7 +215,7 @@ GPGPU2.SimulationShader2 = function (renderer) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, 100, 100, 0, gl.RGBA, gl.FLOAT, new Float32Array(tempData));
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, cWidth, cHeight, 0, gl.RGBA, gl.FLOAT, new Float32Array(tempData));
 
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, tempTexture);
@@ -220,13 +228,19 @@ GPGPU2.SimulationShader2 = function (renderer) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, 100, 100, 0, gl.RGBA, gl.FLOAT, new Float32Array(prevData));
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, cWidth, cHeight, 0, gl.RGBA, gl.FLOAT, new Float32Array(prevData));
 
         gl.activeTexture(gl.TEXTURE1);
         gl.bindTexture(gl.TEXTURE_2D, tempPrevTexture);
         gl.uniform1i(uniforms.u_texPrevPos, 1);
 
-        gl.uniform1f(uniforms.u_timer, timer);
+        gl.uniform1f(uniforms.u_timer, 1.0/4000.0);
+        gl.uniform1f(uniforms.u_clothWidth, cWidth);
+        gl.uniform1f(uniforms.u_clothHeight, cHeight);
+        gl.uniform1f(uniforms.mass, 0.05);
+        gl.uniform2f(uniforms.Str, 30.75, -0.1);
+        gl.uniform2f(uniforms.Shr, 30.75, -0.1);
+        gl.uniform2f(uniforms.Bnd, 40.75, -0.1);
 
     },
 
