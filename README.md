@@ -1,5 +1,8 @@
 # CIS565-Final-WebGL-Cloth-Simulation
 
+WebGl 2 Cloth-Simulation.
+Using Brandon Jones's [WebGL 2 Particle Simulation](https://github.com/toji/webgl2-particles) as framework.
+
 **Feature:**
 
 (1)Implementation of WebGL transform feedback cloth simulation and ping-pong texture method cloth simulation.
