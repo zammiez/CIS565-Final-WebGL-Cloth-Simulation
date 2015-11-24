@@ -26,7 +26,26 @@ window.requestAnimFrame =
 
 (function() {
     'use strict';
-	
+    function getQueryString(name, defaultValue) {
+        var query = window.location.search.substring(1);
+        var vars = query.split("&");
+        for (var i = 0; i < vars.length; i++) {
+            var pair = vars[i].split("=");
+            if (pair[0] == name) {
+                return unescape(pair[1]);
+            }
+        }
+        return defaultValue;
+    }
+
+    function getQueryValue(name, defaultValue) {
+        var value = getQueryString(name, null);
+        if (value == null) {
+            return defaultValue;
+        }
+        return parseInt(value, 10);
+    }
+
 	var canvas,camera,renderer;
     //var shaderProgram;
 	
@@ -170,7 +189,6 @@ window.requestAnimFrame =
 		
 		createVBO(gl);
 		
-		gl.createTransformFeedback(1,tfID);
 		//1. fill in positions
 		//2. fill in indices
 		//3. disable vsync & setup springs
