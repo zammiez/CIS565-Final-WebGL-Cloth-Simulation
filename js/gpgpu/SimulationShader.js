@@ -49,7 +49,7 @@ function simulationCommon() {
       ' vec4 texPos = texture2D(u_texPos,coord);',
       ' vec4 texPrevPos = texture2D(u_texPrevPos,coord);',
       'vec3 F = vec3(0.0);',
-      'F.y = -2.8*mass;',//gravity  well later...
+      'F.y = -9.8*mass;',//gravity  well later...
       ' vec3 vel = (texPos.xyz-texPrevPos.xyz)/timestep;',
       'F+=DAMPING*vel;',
 
@@ -76,21 +76,20 @@ function simulationCommon() {
   '	vec3 deltaP = pos.xyz - posNP;',
   '	vec3 deltaV = vel - v2;',
   '	float dist = length(deltaP);',
-
   '	float   leftTerm = -ks * (dist - rest_length);',
   '	float  rightTerm = kd * (dot(deltaV, deltaP) / dist);',
   '	vec3 springForce = (leftTerm + rightTerm)* normalize(deltaP);',
   '	F += springForce;',
   '};',
 
-      'vec3 acc = F/mass;', // acc = F/m
 
+      'vec3 acc = F/mass;', // acc = F/m
+      
       'vel = vel+ acc*timestep;',//v = v0+a*t
-      'if(((xid>=0.95*u_clothWidth)||(xid<=0.05*u_clothWidth))&&(yid<=0.05*u_clothWidth)); else pos.xyz+=vel;//pos.x -= 0.01;',
+      'if(((xid>=u_clothWidth-1.0)||(xid<=0.0))&&(yid<=0.05*u_clothWidth)); else pos.xyz+=vel*timestep;//pos.x -= 0.01;',
       // pos = 2*pos-prevpos+acc*dt*dt
       //else pos.xyz = 2.0*pos.xyz-texPrevPos.xyz+acc*timestep*timestep;//
-      //'if(texPos.xyz==pos.xyz); else pos.x -= 0.01;',
-      '  return pos;',
+    '  return pos;',
       '}',
     ].join('\n');
 }
@@ -222,7 +221,7 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
         gl.uniform1i(uniforms.u_texPos, 0);
 
         var tempPrevTexture = gl.createTexture();
-
+        gl.activeTexture(gl.TEXTURE1);
         gl.bindTexture(gl.TEXTURE_2D, tempPrevTexture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
@@ -234,13 +233,14 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
         gl.bindTexture(gl.TEXTURE_2D, tempPrevTexture);
         gl.uniform1i(uniforms.u_texPrevPos, 1);
 
-        gl.uniform1f(uniforms.u_timer, 1.0/4000.0);
+        gl.uniform1f(uniforms.u_timer, 1.0/1000.0);
         gl.uniform1f(uniforms.u_clothWidth, cWidth);
         gl.uniform1f(uniforms.u_clothHeight, cHeight);
-        gl.uniform1f(uniforms.mass, 0.05);
-        gl.uniform2f(uniforms.Str, 30.75, -0.1);
-        gl.uniform2f(uniforms.Shr, 30.75, -0.1);
-        gl.uniform2f(uniforms.Bnd, 40.75, -0.1);
+        gl.uniform1f(uniforms.mass, 0.1);
+        gl.uniform2f(uniforms.Str, 50.75, -0.0025);
+        gl.uniform2f(uniforms.Shr, 50.75, -0.0025);
+        gl.uniform2f(uniforms.Bnd, 50.75, -0.0025);
+        debugger;
 
     },
 

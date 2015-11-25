@@ -35,10 +35,13 @@
   </head>
   <body>
     <script src="lib/dat.gui.js"></script>
+
+
     <script src="js/three.js"></script>
     <script src="js/GPGPU.js"></script>
     <script src="js/GeometryUtils.js"></script>
     <script src="js/gpgpu/SimulationShader.js"></script>
+    <script src="lib/OrbitControls.js"></script>
 
     <script src="js/leap-0.6.4.min.js"></script>
     <script src="js/leap-plugins-0.1.6.1.js"></script>
@@ -95,20 +98,20 @@
       var cloth_w, cloth_h;
       var cfg_ui;
 
-      var scene, camera, light, renderer;
+      var scene, camera, light, camControl, renderer;
       var vbo_pos, vbo_pos2;
       var originGeometry, cube, mesh, material;
       var roomMesh;
 
       var data,texture, points;
 
-      var controls;
+      //var controls;
 
       var fboParticles, rtTexturePos, rtTexturePos2, simulationShader;
 
       var width = getQueryValue('width', 1024);
       var height = getQueryValue('height', 1024);
-      var pointSize = getQueryValue('pointSize', 3);
+      var pointSize = getQueryValue('pointSize', 5);
 
       var maxFingers = 42;
       var fingers = [];
@@ -150,6 +153,7 @@
           camera.position.y = 1.5;
           camera.position.z = 4;
           camera.lookAt(scene.position);
+          camControl = new THREE.OrbitControls(camera, renderer.domElement);
           scene.add(camera);
 
           light = new THREE.DirectionalLight(0xffffff, 0.5);
@@ -181,7 +185,7 @@
           }
 
           // Start Creation of DataTexture
-          cloth_h = 30;
+          cloth_h = 10;
           cloth_w = cloth_h;
 
           data = new Float32Array(cloth_w * cloth_h * 4);
@@ -239,7 +243,7 @@
           //timer += 0.002;
 
           //if (timer >= 4) timer = 0;
-          simulationShader.setTimer(0.00002);
+          simulationShader.setTimer(0.0002);
           timer += 1;
 
           // Ugly hack to make the particle mesh always draw last
@@ -258,7 +262,7 @@
           }
 
           count++;
-
+          camControl.update();
           renderer.render(scene, camera);
       }
 

@@ -15,7 +15,7 @@ var GPGPU2 = function (renderer,cloth_w,cloth_h) {
         prevposData = new Float32Array(data);
     }
     this.pass = function (shader, source, target) {
-        debugger;
+
         var sourceAttrib = source.attributes['position'];
         if (target.attributes['position'].buffer && sourceAttrib.buffer) {
 
