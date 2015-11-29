@@ -103,8 +103,9 @@
       var originGeometry, cube, mesh, material;
       var roomMesh;
 
-      var data,texture, points;
+      var data, texture, points;
 
+      var guiStep = false;
       //var controls;
 
       var fboParticles, rtTexturePos, rtTexturePos2, simulationShader;
@@ -227,10 +228,12 @@
           mesh = new THREE.PointCloud(vbo_pos, material);
           //mesh = new THREE.Mesh(vbo_pos, material);
           window.addEventListener('start-simulation', onStartSimulation);
+          window.addEventListener('step-simulation', onStepSimulation);
       }
 
       function onStartSimulation(event){
           //TODO: reset and start simulation
+          //cfg_ui.setPause(false);
           cloth_h = cfg_ui.getClothDim();
           cloth_w = cloth_h;
 
@@ -267,6 +270,11 @@
           simulationShader = new GPGPU2.SimulationShader2(renderer, cloth_w, cloth_h);
       }
 
+      function onStepSimulation(event) {
+          cfg_ui.setPause(true);
+          guiStep = true;
+          debugger;
+      }
       function onWindowResize() {
           camera.aspect = window.innerWidth / window.innerHeight;
           camera.updateProjectionMatrix();
@@ -279,39 +287,31 @@
       var count = 0;
       function render() {
           requestAnimationFrame(render);
+          if ((!cfg_ui.getPause())||guiStep) {
+              simulationShader.setTimer(0.0002);
+              timer += 1;
 
-          //timer += 0.002;
+              // Ugly hack to make the particle mesh always draw last
+              scene.remove(mesh); scene.add(mesh);
 
-          //if (timer >= 4) timer = 0;
-          simulationShader.setTimer(0.0002);
-          timer += 1;
-
-          // Ugly hack to make the particle mesh always draw last
-
-          scene.remove(mesh); scene.add(mesh);
-
-
-
-          if (isWebGL2) {
-              if (count % 2 === 0) {
-                  gpgpu.pass(simulationShader, vbo_pos2, vbo_pos, cfg_ui);
-                  debugger;
-                  mesh.geometry = vbo_pos2;
-              } else {
-                  gpgpu.pass(simulationShader, vbo_pos, vbo_pos2, cfg_ui);
-                  mesh.geometry = vbo_pos;
-              }
-          };
-          count++;
+              if (isWebGL2) {
+                  if (count % 2 === 0) {
+                      gpgpu.pass(simulationShader, vbo_pos2, vbo_pos, cfg_ui);
+                      mesh.geometry = vbo_pos2;
+                  } else {
+                      gpgpu.pass(simulationShader, vbo_pos, vbo_pos2, cfg_ui);
+                      mesh.geometry = vbo_pos;
+                  }
+              };
+              count++;
+              guiStep = !guiStep;
+          }
           camControl.update();
           renderer.render(scene, camera);
-          debugger;
       }
 
       cfg_ui = new UI_cfg();
-      debugger;
       cfg_ui.init();
-      debugger;
 
       init();
 

@@ -241,7 +241,6 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
         gl.uniform2f(uniforms.Str, 50.75, -0.0025);
         gl.uniform2f(uniforms.Shr, 50.75, -0.0025);
         gl.uniform2f(uniforms.Bnd, 50.75, -0.0025);
-        debugger;
 
     },
 
