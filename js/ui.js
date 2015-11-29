@@ -1,46 +1,35 @@
 
-var UI_cfg = function ()
-{
-    var cfg;
-    var Cfg = function () {
-        // TODO: Define config fields and defaults here
-        this.debugView = -1;
-        this.debugScissor = false;
-        this.enableEffect0 = false;
-        this.bloomEffect = false;
-        this.toonEffect = false;
-        this.motionBlurEffect = false;
-        this.scissor_test_optimization = true;
+var UI_cfg = function () {
+
+    var getAnimationData = function () { };
+    var controls = {
+        gui: null,
+        "Cloth Dimension": 10,
+        "Time Step": 0.003
     };
 
+    controls.start = function () {
+        var startEvent = new CustomEvent('start-simulation', getAnimationData());
+        window.dispatchEvent(startEvent);
+    }
+
+    this.getTimeStep = function () {
+        return controls['Time Step'];
+    }
+    this.getClothDim = function () {
+        return controls['Cloth Dimension'];
+    };
     this.init = function () {
-        cfg = new Cfg();
+        //cfg = new Cfg();
 
-        var gui = new dat.GUI();
-        gui.add(cfg, 'debugView', {
-            'None': -1,
-            '0 Depth': 0,
-            '1 Position': 1,
-            '2 Surface Normal': 2,
-            '3 Color map': 3,
-            '4 Bloom source mask': 4,
-            '5 Bloom blurred src': 5
-        });
-        gui.add(cfg, 'debugScissor');
+        controls.gui = new dat.GUI();
 
-        var opt0 = gui.addFolder('OPTIMIZATIONS');
-        opt0.add(cfg, 'scissor_test_optimization');
+        var aFolder = controls.gui.addFolder('a Folder');
 
-        var eff0 = gui.addFolder('POST EFFECTS');
-        //eff0.add(cfg, 'enableEffect0');
-        eff0.add(cfg, 'bloomEffect');
-        eff0.add(cfg, 'toonEffect');
-        //http://http.developer.nvidia.com/GPUGems/gpugems_ch21.html
-        //https://docs.webplatform.org/wiki/tutorials/post-processing_with_webgl
-        //http://webglfundamentals.org/webgl/lessons/webgl-image-processing.html
-        //http://webglfundamentals.org/webgl/lessons/webgl-image-processing-continued.html
-        eff0.add(cfg, 'motionBlurEffect');
-        //http://http.developer.nvidia.com/GPUGems3/gpugems3_ch27.html
-        // TODO: add more effects toggles and parameters here
+        aFolder.add(controls, "Cloth Dimension");
+        aFolder.add(controls, "Time Step");
+        aFolder.add(controls, "start");
+
+        aFolder.open();
     };
 }

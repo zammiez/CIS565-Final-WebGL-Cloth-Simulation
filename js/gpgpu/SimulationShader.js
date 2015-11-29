@@ -51,7 +51,7 @@ function simulationCommon() {
       'vec3 F = vec3(0.0);',
       'F.y = -9.8*mass;',//gravity  well later...
       ' vec3 vel = (texPos.xyz-texPrevPos.xyz)/timestep;',
-      'F+=DAMPING*vel;',
+      //'F+=DAMPING*vel;',
 
 
 
@@ -98,7 +98,7 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
 
   var attributes = {
       a_position: 0,
-      a_prevpos: 1,
+     // a_prevpos: 1,
   };
 
   function createProgram () {
@@ -117,7 +117,7 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
        // '#extension GL_ARB_explicit_uniform_location : require',
         'precision ' + renderer.getPrecision() + ' float;',
       'attribute vec4 a_position;',
-      'attribute vec4 a_prevpos;',
+      //'attribute vec4 a_prevpos;',
 
       'varying vec4 v_prevpos;',
       simulationCommon(),
@@ -201,7 +201,7 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
 
     attributes: attributes,
 
-    bind: function (tempData,prevData) {
+    bind: function (tempData,prevData,cfg) {
         //!!! VBO -> Texture ?????
         //http://stackoverflow.com/questions/17262574/packing-vertex-data-into-a-webgl-texture
         //TODO: don't need to re-create texture every frame.....put those into init
@@ -233,7 +233,8 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
         gl.bindTexture(gl.TEXTURE_2D, tempPrevTexture);
         gl.uniform1i(uniforms.u_texPrevPos, 1);
 
-        gl.uniform1f(uniforms.u_timer, 1.0/1000.0);
+        //gl.uniform1f(uniforms.u_timer, 0.003);
+        gl.uniform1f(uniforms.u_timer, cfg.getTimeStep());
         gl.uniform1f(uniforms.u_clothWidth, cWidth);
         gl.uniform1f(uniforms.u_clothHeight, cHeight);
         gl.uniform1f(uniforms.mass, 0.1);
