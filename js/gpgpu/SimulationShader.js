@@ -17,27 +17,27 @@ function simulationCommon() {
       'uniform sampler2D u_texPrevPos;',
       'float DAMPING = -0.0125;',
       'vec2 getNeighbor(int n, out float ks, out float kd)',
-  '{',
-  //structural springs (adjacent neighbors)
-  '	if (n < 4){ ks = Str[0]; kd = Str[1]; }',	//ksStr, kdStr
-  '	if (n == 0)	return vec2(1.0, 0.0);',
-  '	if (n == 1)	return vec2(0.0, -1.0);',
-  '	if (n == 2)	return vec2(-1.0, 0.0);',
-  '	if (n == 3)	return vec2(0.0, 1.0);',
-//shear springs (diagonal neighbors)
-'if (n<8) { ks = Shr[0]; kd = Shr[1]; } ',//ksShr,kdShr
-'if (n == 4) return vec2(1.0, -1.0);',
-'if (n == 5) return vec2(-1.0, -1.0);',
-'if (n == 6) return vec2(-1.0, 1.0);',
-'if (n == 7) return vec2(1.0, 1.0);',
-//bend spring (adjacent neighbors 1 node away)
-'if (n<12) { ks =Bnd[0]; kd = Bnd[1]; }', //ksBnd,kdBnd
-'if (n == 8)	return vec2(2.0, 0.0);',
-'if (n == 9) return vec2(0.0, -2.0);',
-'if (n == 10) return vec2(-2.0, 0.0);',
-'if (n == 11) return vec2(0.0, 2.0);',
-  'return vec2(0.0,0.0);',
-  '}',
+      '{',
+            //structural springs (adjacent neighbors)
+      '	    if (n < 4){ ks = Str[0]; kd = Str[1]; }',	//ksStr, kdStr
+      '     if (n == 0)	return vec2(1.0, 0.0);',
+      '	    if (n == 1)	return vec2(0.0, -1.0);',
+      '	    if (n == 2)	return vec2(-1.0, 0.0);',
+      ' 	if (n == 3)	return vec2(0.0, 1.0);',
+            //shear springs (diagonal neighbors)
+      '     if (n<8) { ks = Shr[0]; kd = Shr[1]; } ',//ksShr,kdShr
+      '     if (n == 4) return vec2(1.0, -1.0);',
+      '     if (n == 5) return vec2(-1.0, -1.0);',
+      '     if (n == 6) return vec2(-1.0, 1.0);',
+      '     if (n == 7) return vec2(1.0, 1.0);',
+            //bend spring (adjacent neighbors 1 node away)
+      '     if (n<12) { ks =Bnd[0]; kd = Bnd[1]; }', //ksBnd,kdBnd
+      '     if (n == 8)	return vec2(2.0, 0.0);',
+      '     if (n == 9) return vec2(0.0, -2.0);',
+      '     if (n == 10) return vec2(-2.0, 0.0);',
+      '     if (n == 11) return vec2(0.0, 2.0);',
+      '     return vec2(0.0,0.0);',
+      '}',
 
       'vec4 runSimulation(vec4 pos,float v_id) {',
       //'float mass = 0.5;',
@@ -50,7 +50,7 @@ function simulationCommon() {
       ' vec4 texPrevPos = texture2D(u_texPrevPos,coord);',
       'vec3 F = vec3(0.0);',
       'F.y = -9.8*mass;',//gravity  well later...
-      ' vec3 vel = (texPos.xyz-texPrevPos.xyz)/timestep;',
+      ' vec3 vel = (pos.xyz-texPrevPos.xyz)/timestep;',
       //'F+=DAMPING*vel;',
 
 
@@ -86,7 +86,10 @@ function simulationCommon() {
       'vec3 acc = F/mass;', // acc = F/m
       
       'vel = vel+ acc*timestep;',//v = v0+a*t
-      'if(((xid>=u_clothWidth-1.0)||(xid<=0.0))&&(yid<=0.05*u_clothWidth)); else pos.xyz+=vel*timestep;//pos.x -= 0.01;',
+      'pos.xyz = pos.xyz -texPos.xyz;',
+      //'pos.xyz = texPos.xyz+0.001;',
+      //'if(texPrevPos.xyz==texPos.xyz) pos.x-=0.001;else pos.x+=0.001;',
+      //'if(((xid>=u_clothWidth-1.0)||(xid<=0.0))&&(yid<=0.05*u_clothWidth)); else pos.xyz = texPos.xyz+vel*timestep;',
       // pos = 2*pos-prevpos+acc*dt*dt
       //else pos.xyz = 2.0*pos.xyz-texPrevPos.xyz+acc*timestep*timestep;//
     '  return pos;',
@@ -206,9 +209,8 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
         //http://stackoverflow.com/questions/17262574/packing-vertex-data-into-a-webgl-texture
         //TODO: don't need to re-create texture every frame.....put those into init
         gl.useProgram(program);
-        
         var tempTexture = gl.createTexture();
-
+        //gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, tempTexture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);

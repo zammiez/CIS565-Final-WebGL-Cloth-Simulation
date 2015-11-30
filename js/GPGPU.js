@@ -22,9 +22,10 @@ var GPGPU2 = function (renderer,cloth_w,cloth_h) {
             //posData = new Float32Array(sourceAttrib.array);
             
             //gl.getBufferSubData(gl.ARRAY_BUFFER,tempData,sourceAttrib.buffer);
-            shader.bind(posData,prevposData,cfg);
+            shader.bind(posData, prevposData, cfg);
+            debugger;
             prevposData = new Float32Array(posData);
-
+            debugger;
             //gl.enableVertexAttribArray(shader.attributes.a_prevpos);
             //gl.bindBuffer(gl.ARRAY_BUFFER, source.attributes['prev_pos'].buffer);
             //gl.vertexAttribPointer(shader.attributes.a_prevpos, 4, gl.FLOAT, false, 16, 0);
@@ -32,10 +33,6 @@ var GPGPU2 = function (renderer,cloth_w,cloth_h) {
             gl.enableVertexAttribArray(shader.attributes.a_position);
             gl.bindBuffer(gl.ARRAY_BUFFER, sourceAttrib.buffer);
             gl.vertexAttribPointer(shader.attributes.a_position, 4, gl.FLOAT, false, 16, 0);
-
-
-            gl.getBufferSubData(gl.ARRAY_BUFFER, 0, arrBuffer);
-            posData = new Float32Array(arrBuffer);
 
             gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, transformFeedback);
             gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, target.attributes['position'].buffer);
@@ -48,6 +45,11 @@ var GPGPU2 = function (renderer,cloth_w,cloth_h) {
 
             gl.endTransformFeedback();
             gl.disable(gl.RASTERIZER_DISCARD);
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, target.attributes['position'].buffer);
+            gl.getBufferSubData(gl.ARRAY_BUFFER, 0, arrBuffer);
+            posData = new Float32Array(arrBuffer);
+            debugger;
 
             // Unbind the transform feedback buffer so subsequent attempts
             // to bind it to ARRAY_BUFFER work.

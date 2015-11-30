@@ -123,6 +123,14 @@
 
       var isWebGL2 = false;
 
+      var raycaster = new THREE.Raycaster();
+      var mouse = new THREE.Vector2();
+
+      function onMouseMove(event) {
+          mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+          mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      }
+
       function init() {
           container = document.createElement('div');
           document.body.appendChild(container);
@@ -225,10 +233,12 @@
               //WebGL 1+
           }
 
+          //mesh = new THREE.PointCloud(vbo_pos, material);
           mesh = new THREE.PointCloud(vbo_pos, material);
           //mesh = new THREE.Mesh(vbo_pos, material);
           window.addEventListener('start-simulation', onStartSimulation);
           window.addEventListener('step-simulation', onStepSimulation);
+          window.addEventListener('mousemove',onMouseMove,false);
       }
 
       function onStartSimulation(event){
@@ -286,6 +296,7 @@
       var timer = 0;
       var count = 0;
       function render() {
+
           requestAnimationFrame(render);
           if ((!cfg_ui.getPause())||guiStep) {
               simulationShader.setTimer(0.0002);
