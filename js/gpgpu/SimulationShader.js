@@ -7,7 +7,7 @@ function simulationCommon() {
       'uniform float u_timer;',
       'uniform float u_clothWidth;',
       'uniform float u_clothHeight;',
-
+      'uniform float u_wind;',
       'uniform float mass;',
       'uniform vec2 Str;',
       'uniform vec2 Shr;',
@@ -52,8 +52,8 @@ function simulationCommon() {
       'F.y = -9.8*mass;',//gravity  well later...
       ' vec3 vel = (texPos.xyz-texPrevPos.xyz)/timestep;',
       'F+=DAMPING*vel;',
-
-
+      'F.x+=u_wind*0.3;',
+      'F.z+=u_wind*0.7;',
 
   'float ks, kd;',
 
@@ -239,10 +239,13 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
         gl.uniform1f(uniforms.u_timer, cfg.getTimeStep());
         gl.uniform1f(uniforms.u_clothWidth, cWidth);
         gl.uniform1f(uniforms.u_clothHeight, cHeight);
+        gl.uniform1f(uniforms.u_wind, cfg.getWindForce());
+
         gl.uniform1f(uniforms.mass, 0.1);
-        gl.uniform2f(uniforms.Str, 550.75, -0.25);
-        gl.uniform2f(uniforms.Shr, 550.75, -0.25);
-        gl.uniform2f(uniforms.Bnd, 1550.75, -0.25);
+        gl.uniform2f(uniforms.Str, 850.00, -0.25);
+        gl.uniform2f(uniforms.Shr, 850.00, -0.25);
+        gl.uniform2f(uniforms.Bnd, 1550.00, -0.25);
+        
 
     },
 
