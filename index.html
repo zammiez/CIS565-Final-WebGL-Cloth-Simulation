@@ -112,7 +112,7 @@
 
       var width = getQueryValue('width', 1024);
       var height = getQueryValue('height', 1024);
-      var pointSize = getQueryValue('pointSize', 5);
+      var pointSize = getQueryValue('pointSize', 3);
 
       var maxFingers = 42;
       var fingers = [];
@@ -183,7 +183,7 @@
             new THREE.MeshBasicMaterial({ map: backImage, side: THREE.BackSide })
           ];
           var roomMaterial = new THREE.MeshFaceMaterial(roomMaterialArray);
-          var roomGeometry = new THREE.BoxGeometry(10.24, 4, 5.12);
+          var roomGeometry = new THREE.BoxGeometry(10.24, 6, 5.12);
           roomMesh = new THREE.Mesh(roomGeometry, roomMaterial);
           roomMesh.doubleSided = true;
           scene.add(roomMesh);
@@ -194,7 +194,7 @@
           }
 
           // Start Creation of DataTexture
-          cloth_h = 10;
+          cloth_h = 50;
           cloth_w = cloth_h;
 
           data = new Float32Array(cloth_w * cloth_h * 4);

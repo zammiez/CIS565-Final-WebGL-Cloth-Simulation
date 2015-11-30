@@ -51,7 +51,7 @@ function simulationCommon() {
       'vec3 F = vec3(0.0);',
       'F.y = -9.8*mass;',//gravity  well later...
       ' vec3 vel = (texPos.xyz-texPrevPos.xyz)/timestep;',
-      //'F+=DAMPING*vel;',
+      'F+=DAMPING*vel;',
 
 
 
@@ -240,9 +240,9 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
         gl.uniform1f(uniforms.u_clothWidth, cWidth);
         gl.uniform1f(uniforms.u_clothHeight, cHeight);
         gl.uniform1f(uniforms.mass, 0.1);
-        gl.uniform2f(uniforms.Str, 50.75, -0.0025);
-        gl.uniform2f(uniforms.Shr, 50.75, -0.0025);
-        gl.uniform2f(uniforms.Bnd, 50.75, -0.0025);
+        gl.uniform2f(uniforms.Str, 550.75, -0.25);
+        gl.uniform2f(uniforms.Shr, 550.75, -0.25);
+        gl.uniform2f(uniforms.Bnd, 1550.75, -0.25);
 
     },
 

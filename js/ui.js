@@ -3,7 +3,7 @@ var UI_cfg = function () {
 
     var controls = {
         gui: null,
-        "Cloth Dimension": 10,
+        "Cloth Dimension": 50,
         "Time Step": 0.003,
         "pause": false
     };
