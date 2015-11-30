@@ -50,7 +50,7 @@ function simulationCommon() {
       ' vec4 texPrevPos = texture2D(u_texPrevPos,coord);',
       'vec3 F = vec3(0.0);',
       'F.y = -9.8*mass;',//gravity  well later...
-      ' vec3 vel = (pos.xyz-texPrevPos.xyz)/timestep;',
+      ' vec3 vel = (texPos.xyz-texPrevPos.xyz)/timestep;',
       //'F+=DAMPING*vel;',
 
 
@@ -86,10 +86,10 @@ function simulationCommon() {
       'vec3 acc = F/mass;', // acc = F/m
       
       'vel = vel+ acc*timestep;',//v = v0+a*t
-      'pos.xyz = pos.xyz -texPos.xyz;',
+      //'pos.xyz = pos.xyz -texPos.xyz;',
       //'pos.xyz = texPos.xyz+0.001;',
       //'if(texPrevPos.xyz==texPos.xyz) pos.x-=0.001;else pos.x+=0.001;',
-      //'if(((xid>=u_clothWidth-1.0)||(xid<=0.0))&&(yid<=0.05*u_clothWidth)); else pos.xyz = texPos.xyz+vel*timestep;',
+      'if(((xid>=u_clothWidth-1.0)||(xid<=0.0))&&(yid<=0.05*u_clothWidth)); else pos.xyz += vel*timestep;',
       // pos = 2*pos-prevpos+acc*dt*dt
       //else pos.xyz = 2.0*pos.xyz-texPrevPos.xyz+acc*timestep*timestep;//
     '  return pos;',
