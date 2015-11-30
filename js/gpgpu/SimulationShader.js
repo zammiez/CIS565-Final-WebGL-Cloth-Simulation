@@ -12,6 +12,7 @@ function simulationCommon() {
       'uniform vec2 Str;',
       'uniform vec2 Shr;',
       'uniform vec2 Bnd;',
+      'uniform vec4 u_pins;',
 
       'uniform sampler2D u_texPos;',
       'uniform sampler2D u_texPrevPos;',
@@ -43,6 +44,12 @@ function simulationCommon() {
       //'float mass = 0.5;',
       'float xid = float( int(v_id)/int(u_clothWidth));',
       'float yid = v_id - u_clothWidth*xid;',
+
+      'bool pinBoolean = (xid<=1.0)&&(yid<=1.0)&&(u_pins.x>0.0);',//Pin1
+      'if(!pinBoolean) pinBoolean = (xid>=u_clothWidth-2.0)&&(yid<=1.0)&&(u_pins.y>0.0);',//Pin2
+      'if(!pinBoolean) pinBoolean = (xid<=1.0)&&(yid>=u_clothWidth-2.0)&&(u_pins.z>0.0);',//Pin3
+      'if(!pinBoolean) pinBoolean = (xid>=u_clothWidth-2.0)&&(yid>=u_clothWidth-2.0)&&(u_pins.w>0.0);',//Pin4
+
       'vec2 coord;',
       'coord = vec2(yid,u_clothWidth-1.0-xid)*(1.0/u_clothWidth);',
       'float timestep = u_timer;',
@@ -82,16 +89,11 @@ function simulationCommon() {
   '	F += springForce;',
   '};',
 
-
       'vec3 acc = F/mass;', // acc = F/m
-      
       'vel = vel+ acc*timestep;',//v = v0+a*t
-      //'pos.xyz = pos.xyz -texPos.xyz;',
-      //'pos.xyz = texPos.xyz+0.001;',
-      //'if(texPrevPos.xyz==texPos.xyz) pos.x-=0.001;else pos.x+=0.001;',
-      'if(((xid>=u_clothWidth-1.0)||(xid<=0.0))&&(yid<=0.05*u_clothWidth)); else pos.xyz += vel*timestep;',
-      // pos = 2*pos-prevpos+acc*dt*dt
-      //else pos.xyz = 2.0*pos.xyz-texPrevPos.xyz+acc*timestep*timestep;//
+
+      'if(pinBoolean); else pos.xyz += vel*timestep;',
+      'if(pos.y<-3.0) pos.y = -3.0;',//ground
     '  return pos;',
       '}',
     ].join('\n');
@@ -131,7 +133,7 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
       '  v_prevpos = pos;',
       ' pos = runSimulation(pos,vid);',
      '  // Write new position out',
-     '  gl_Position =vec4(pos.xyz,vid);//vec4(vec3(pos.w)*0.02,pos.w); ',
+     '  gl_Position =vec4(pos.xyz,vid);',
       '}'
     ].join('\n'));
 
@@ -242,10 +244,11 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
         gl.uniform1f(uniforms.u_wind, cfg.getWindForce());
 
         gl.uniform1f(uniforms.mass, 0.1);
-        gl.uniform2f(uniforms.Str, 850.00, -0.25);
-        gl.uniform2f(uniforms.Shr, 850.00, -0.25);
-        gl.uniform2f(uniforms.Bnd, 1550.00, -0.25);
+        gl.uniform2f(uniforms.Str, cfg.getKsString(), -cfg.getKdString());
+        gl.uniform2f(uniforms.Shr, cfg.getKsShear(), -cfg.getKdShear());
+        gl.uniform2f(uniforms.Bnd, cfg.getKsBend(), -cfg.getKdBend());
         
+        gl.uniform4f(uniforms.u_pins,cfg.getPin1(),cfg.getPin2(),cfg.getPin3(),cfg.getPin4());
 
     },
 

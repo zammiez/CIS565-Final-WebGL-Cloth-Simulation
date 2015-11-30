@@ -68,7 +68,8 @@
 
       void main() {
         float depth = 1.0;//smoothstep( 10.24, 1.0, gl_FragCoord.z / gl_FragCoord.w );
-        gl_FragColor = vec4( (vec3(0.0, 0.03, 0.05) + (vPosition * 0.25)), depth );
+        gl_FragColor = vec4( (vec3(0.01, 0.02, 0.03) + (abs(vPosition) * 0.25)), depth );
+        //gl_FragColor = vec4( (vPosition), depth );
       }
     </script>
 
@@ -112,7 +113,7 @@
 
       var width = getQueryValue('width', 1024);
       var height = getQueryValue('height', 1024);
-      var pointSize = getQueryValue('pointSize', 3);
+      var pointSize = getQueryValue('pointSize', 2.5);
 
       var maxFingers = 42;
       var fingers = [];
