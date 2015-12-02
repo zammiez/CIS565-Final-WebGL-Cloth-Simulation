@@ -3,22 +3,28 @@
  */
 
 function simulationCommon() {
+    //UBO:
+    //http://www.opentk.com/node/2926
     return [
-      'uniform float u_timer;',
-      'uniform float u_clothWidth;',
-      'uniform float u_clothHeight;',
-      'uniform float u_wind;',
-      'uniform float mass;',
-      'uniform vec2 Str;',
-      'uniform vec2 Shr;',
-      'uniform vec2 Bnd;',
-      'uniform vec4 u_pins;',
+        'layout(std140) uniform u_tryUBO{',
+        '   vec4 uboTry1;',
+        '   vec4 uboTry2;',
+        '};',
+        'uniform float u_timer;',
+        'uniform float u_clothWidth;',
+        'uniform float u_clothHeight;',
+        'uniform float u_wind;',
+        'uniform float mass;',
+        'uniform vec2 Str;',
+        'uniform vec2 Shr;',
+        'uniform vec2 Bnd;',
+        'uniform vec4 u_pins;',
 
-      'uniform sampler2D u_texPos;',
-      'uniform sampler2D u_texPrevPos;',
-      'float DAMPING = -0.0125;',
-      'vec2 getNeighbor(int n, out float ks, out float kd)',
-      '{',
+        'uniform sampler2D u_texPos;',
+        'uniform sampler2D u_texPrevPos;',
+        'float DAMPING = -0.0125;',
+        'vec2 getNeighbor(int n, out float ks, out float kd)',
+        '{',
             //structural springs (adjacent neighbors)
       '	    if (n < 4){ ks = Str[0]; kd = Str[1]; }',	//ksStr, kdStr
       '     if (n == 0)	return vec2(1.0, 0.0);',
@@ -53,8 +59,8 @@ function simulationCommon() {
       'vec2 coord;',
       'coord = vec2(yid,u_clothWidth-1.0-xid)*(1.0/u_clothWidth);',
       'float timestep = u_timer;',
-      ' vec4 texPos = texture2D(u_texPos,coord);',
-      ' vec4 texPrevPos = texture2D(u_texPrevPos,coord);',
+      ' vec4 texPos = texture(u_texPos,coord);',
+      ' vec4 texPrevPos = texture(u_texPrevPos,coord);',
       'vec3 F = vec3(0.0);',
       'F.y = -9.8*mass;',//gravity  well later...
       ' vec3 vel = (texPos.xyz-texPrevPos.xyz)/timestep;',
@@ -62,32 +68,32 @@ function simulationCommon() {
       'F.x+=u_wind*0.3;',
       'F.z+=u_wind*0.7;',
 
-  'float ks, kd;',
+      'float ks, kd;',
 
-  'for (int k = 0; k < 12; k++)',
-  '{',
-  '	vec2 nCoord = getNeighbor(k, ks, kd);',
+      'for (int k = 0; k < 12; k++)',
+      '{',
+      '	vec2 nCoord = getNeighbor(k, ks, kd);',
 
-  '	float inv_cloth_size = 1.0 / (u_clothWidth);//size of a single patch in world space',
-  '	float rest_length = length(nCoord*inv_cloth_size);',
+      '	float inv_cloth_size = 1.0 / (u_clothWidth);//size of a single patch in world space',
+      '	float rest_length = length(nCoord*inv_cloth_size);',
 
-  '	float nxid = xid + nCoord.x;',
-  '	float nyid = yid + nCoord.y;',
-  '	if (nxid < 0.0 || nxid>(u_clothWidth-1.0) || nyid<0.0 || nyid>(u_clothWidth-1.0)) continue;',
+      '	float nxid = xid + nCoord.x;',
+      '	float nyid = yid + nCoord.y;',
+      '	if (nxid < 0.0 || nxid>(u_clothWidth-1.0) || nyid<0.0 || nyid>(u_clothWidth-1.0)) continue;',
 
-  '	nCoord = vec2(nyid,u_clothWidth-1.0-nxid) / u_clothWidth;',
-  '	vec3 posNP = texture2D(u_texPos, nCoord).xyz;',
-  '	vec3 prevNP = texture2D(u_texPrevPos, nCoord).xyz;',
+      '	nCoord = vec2(nyid,u_clothWidth-1.0-nxid) / u_clothWidth;',
+      '	vec3 posNP = texture(u_texPos, nCoord).xyz;',
+      '	vec3 prevNP = texture(u_texPrevPos, nCoord).xyz;',
 
-  '	vec3 v2 = (posNP - prevNP) / timestep;',
-  '	vec3 deltaP = pos.xyz - posNP;',
-  '	vec3 deltaV = vel - v2;',
-  '	float dist = length(deltaP);',
-  '	float   leftTerm = -ks * (dist - rest_length);',
-  '	float  rightTerm = kd * (dot(deltaV, deltaP) / dist);',
-  '	vec3 springForce = (leftTerm + rightTerm)* normalize(deltaP);',
-  '	F += springForce;',
-  '};',
+      '	vec3 v2 = (posNP - prevNP) / timestep;',
+      '	vec3 deltaP = pos.xyz - posNP;',
+      '	vec3 deltaV = vel - v2;',
+      '	float dist = length(deltaP);',
+      '	float   leftTerm = -ks * (dist - rest_length);',
+      '	float  rightTerm = kd * (dot(deltaV, deltaP) / dist);',
+      '	vec3 springForce = (leftTerm + rightTerm)* normalize(deltaP);',
+      '	F += springForce;',
+      '};',
 
       'vec3 acc = F/mass;', // acc = F/m
       'vel = vel+ acc*timestep;',//v = v0+a*t
@@ -117,14 +123,14 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
     var fragmentShader = gl.createShader( gl.FRAGMENT_SHADER );
 
     gl.shaderSource(vertexShader, [
-       // '#version 140',
+        '#version 300 es',
        // '#extension GL_ARB_explicit_attrib_location : require',
        // '#extension GL_ARB_explicit_uniform_location : require',
         'precision ' + renderer.getPrecision() + ' float;',
-      'attribute vec4 a_position;',
+      'in vec4 a_position;',
       //'attribute vec4 a_prevpos;',
 
-      'varying vec4 v_prevpos;',
+      'out vec4 v_prevpos;',
       simulationCommon(),
 
       'void main() {',
@@ -138,10 +144,11 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
     ].join('\n'));
 
     gl.shaderSource(fragmentShader, [
+      '#version 300 es',
       'precision ' + renderer.getPrecision() + ' float;',
-      'varying vec4 v_prevpos;',
+      'in vec4 v_prevpos;',
       'void main() {',
-        'gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);',
+        //'gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);',??????
       '}'
     ].join('\n'));
 
@@ -248,8 +255,32 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
         gl.uniform2f(uniforms.Shr, cfg.getKsShear(), -cfg.getKdShear());
         gl.uniform2f(uniforms.Bnd, cfg.getKsBend(), -cfg.getKdBend());
         
-        gl.uniform4f(uniforms.u_pins,cfg.getPin1(),cfg.getPin2(),cfg.getPin3(),cfg.getPin4());
+        gl.uniform4f(uniforms.u_pins, cfg.getPin1(), cfg.getPin2(), cfg.getPin3(), cfg.getPin4());
 
+        //UBO:
+        //https://www.packtpub.com/books/content/opengl-40-using-uniform-blocks-and-uniform-buffer-objects
+        //1. get index of uniform block
+        var blockIdx = gl.getUniformBlockIndex(program, "u_tryUBO");
+        //2. allocate space for buffer
+        var blockSize = gl.getActiveUniformBlockParameter(program, blockIdx, gl.UNIFORM_BLOCK_DATA_SIZE);
+        var blockBuffer = gl.createBuffer();
+        //3. Query for the offset of each variable within the block
+        var names = ["uboTry1", "uboTry2"];
+            //var indices = new Int16Array(2);
+        var indices = gl.getUniformIndices(program, names);
+        var offset = gl.getActiveUniforms(program, indices, gl.UNIFORM_OFFSET);
+        debugger;
+        //4. Place the data into buffer
+        var try1 = [0.1, 0.2, 0.3, 0.4];
+        var try2 = [0.5, 0.6, 0.7, 0.8];
+        //5. Create the OpenGL buffer object and copy data into it
+        //6. bind the buffer object to the uniform block
+        /*
+            'layout (std140) uniform u_tryUBO{',
+            '   vec4 uboTry1;',
+            '   vec4 uboTry2;',
+            '};',
+        */
     },
 
     setTimer: function ( timer ) {
