@@ -102,7 +102,7 @@
       var scene, camera, light, camControl, renderer;
       var vbo_pos, vbo_pos2;
       var originGeometry, cube, mesh, material;
-      var roomMesh;
+      var roomMesh,sphereMesh;
 
       var data, texture, points;
 
@@ -188,7 +188,12 @@
           roomMesh = new THREE.Mesh(roomGeometry, roomMaterial);
           roomMesh.doubleSided = true;
           scene.add(roomMesh);
-
+          var sphereMaterial = new THREE.MeshFaceMaterial(roomMaterialArray);
+          var sphereGeom = new THREE.SphereGeometry(0.3, 100, 100);
+          sphereMesh = new THREE.Mesh(sphereGeom, sphereMaterial);
+          sphereMesh.position.x = 0.5;
+          sphereMesh.position.z = 0.3;
+          scene.add(sphereMesh);
           //
           if (!isWebGL2 && !renderer.context.getExtension('OES_texture_float')) {
               alert('OES_texture_float is not :(');

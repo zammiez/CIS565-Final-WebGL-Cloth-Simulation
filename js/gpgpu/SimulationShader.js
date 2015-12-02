@@ -6,10 +6,10 @@ function simulationCommon() {
     //UBO:
     //http://www.opentk.com/node/2926
     return [
-        'layout(std140) uniform u_tryUBO{',
-        '   vec4 uboTry1;',
-        '   vec4 uboTry2;',
-        '};',
+        //'layout(std140) uniform u_tryUBO{',
+        //'   vec4 uboTry1;',
+        //'   vec4 uboTry2;',
+        //'};',
         'uniform float u_timer;',
         'uniform float u_clothWidth;',
         'uniform float u_clothHeight;',
@@ -23,6 +23,14 @@ function simulationCommon() {
         'uniform sampler2D u_texPos;',
         'uniform sampler2D u_texPrevPos;',
         'float DAMPING = -0.0125;',
+        'void sphereCollision(inout vec3 x, vec3 center, float r)',
+        '{',
+	    'vec3 delta = x - center;',
+        'float dist = length(delta);',
+        'if (dist < r) {',
+        '   x = center + delta*1.01*(r / dist);',
+        '}',
+    '} ',
         'vec2 getNeighbor(int n, out float ks, out float kd)',
         '{',
             //structural springs (adjacent neighbors)
@@ -100,6 +108,7 @@ function simulationCommon() {
 
       'if(pinBoolean); else pos.xyz += vel*timestep;',
       'if(pos.y<-3.0) pos.y = -3.0;',//ground
+      'sphereCollision(pos.xyz,vec3(0.5,0.0,0.3),0.3);',
     '  return pos;',
       '}',
     ].join('\n');
@@ -256,7 +265,7 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
         gl.uniform2f(uniforms.Bnd, cfg.getKsBend(), -cfg.getKdBend());
         
         gl.uniform4f(uniforms.u_pins, cfg.getPin1(), cfg.getPin2(), cfg.getPin3(), cfg.getPin4());
-
+/*
         //UBO:
         //https://www.packtpub.com/books/content/opengl-40-using-uniform-blocks-and-uniform-buffer-objects
         //1. get index of uniform block
@@ -275,7 +284,7 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
         var try2 = [0.5, 0.6, 0.7, 0.8];
         //5. Create the OpenGL buffer object and copy data into it
         //6. bind the buffer object to the uniform block
-        /*
+        
             'layout (std140) uniform u_tryUBO{',
             '   vec4 uboTry1;',
             '   vec4 uboTry2;',
