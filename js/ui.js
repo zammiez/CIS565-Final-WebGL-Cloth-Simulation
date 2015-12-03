@@ -4,6 +4,7 @@ var UI_cfg = function () {
     var controls = {
         gui: null,
         "Cloth Dimension": 50,
+        "Particle Mass": 0.1,
         "Time Step": 0.003,
         "Ks String": 850.0,
         "Ks Shear": 850.0,
@@ -32,6 +33,20 @@ var UI_cfg = function () {
         window.dispatchEvent(stepEvent);
     }
 
+
+    this.getClothDim = function () {
+        return controls['Cloth Dimension'];
+    };
+
+    this.getParticleMass = function () {
+        //return 0.1;
+        return controls['Particle Mass'];
+    };
+
+    this.getTimeStep = function () {
+        return controls['Time Step'];
+    };
+
     this.getKsString = function () {
         return controls['Ks String'];
     };
@@ -50,14 +65,6 @@ var UI_cfg = function () {
     };
     this.getKdBend = function () {
         return controls['Kd Bend'];
-    };
-
-    this.getTimeStep = function () {
-        return controls['Time Step'];
-    };
-
-    this.getClothDim = function () {
-        return controls['Cloth Dimension'];
     };
 
     this.getWindForce = function () {
@@ -100,6 +107,7 @@ var UI_cfg = function () {
         var Simulation_Settings = controls.gui.addFolder('Simulation_Settings');
 
         Simulation_Settings.add(controls, "Cloth Dimension");
+        Simulation_Settings.add(controls, "Particle Mass");
         Simulation_Settings.add(controls, "Time Step");
 
         Simulation_Settings.add(controls, "Ks String");

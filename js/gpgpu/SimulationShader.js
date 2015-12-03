@@ -19,6 +19,7 @@ function simulationCommon() {
         'uniform vec2 Shr;',
         'uniform vec2 Bnd;',
         'uniform vec4 u_pins;',
+        'uniform vec4 u_newPinPos;',
 
         'uniform sampler2D u_texPos;',
         'uniform sampler2D u_texPrevPos;',
@@ -58,8 +59,9 @@ function simulationCommon() {
       //'float mass = 0.5;',
       'float xid = float( int(v_id)/int(u_clothWidth));',
       'float yid = v_id - u_clothWidth*xid;',
-
-      'bool pinBoolean = (xid<=1.0)&&(yid<=1.0)&&(u_pins.x>0.0);',//Pin1
+      'if(u_newPinPos.w>=1.0 && length(pos.xyz-u_newPinPos.xyz)<0.1 ) pos.w=0.0;',
+      'bool pinBoolean = (pos.w<=0.0);',//Pin1
+      'if(!pinBoolean) pinBoolean = (xid<=1.0)&&(yid<=1.0)&&(u_pins.x>0.0);',
       'if(!pinBoolean) pinBoolean = (xid>=u_clothWidth-2.0)&&(yid<=1.0)&&(u_pins.y>0.0);',//Pin2
       'if(!pinBoolean) pinBoolean = (xid<=1.0)&&(yid>=u_clothWidth-2.0)&&(u_pins.z>0.0);',//Pin3
       'if(!pinBoolean) pinBoolean = (xid>=u_clothWidth-2.0)&&(yid>=u_clothWidth-2.0)&&(u_pins.w>0.0);',//Pin4
@@ -224,7 +226,7 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
 
     attributes: attributes,
 
-    bind: function (tempData,prevData,cfg) {
+    bind: function (tempData,prevData,cfg,newPinPos) {
         //!!! VBO -> Texture ?????
         //http://stackoverflow.com/questions/17262574/packing-vertex-data-into-a-webgl-texture
         //TODO: don't need to re-create texture every frame.....put those into init
@@ -268,7 +270,8 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
         gl.uniform2f(uniforms.Bnd, cfg.getKsBend(), -cfg.getKdBend());
         
         gl.uniform4f(uniforms.u_pins, cfg.getPin1(), cfg.getPin2(), cfg.getPin3(), cfg.getPin4());
-/*
+        gl.uniform4f(uniforms.u_newPinPos, newPinPos[0],newPinPos[1],newPinPos[2],newPinPos[3]);
+        /*
         //UBO:
         //https://www.packtpub.com/books/content/opengl-40-using-uniform-blocks-and-uniform-buffer-objects
         //1. get index of uniform block

@@ -260,6 +260,7 @@
           //cfg_ui.setPause(false);
           cloth_h = cfg_ui.getClothDim();
           cloth_w = cloth_h;
+          var mass = cfg_ui.getParticleMass();
 
           data = new Float32Array(cloth_w * cloth_h * 4);
           for (var i = 0, t = 0, x = 0; x < cloth_w; x++) {
@@ -267,7 +268,7 @@
                   data[i + 0] = x * 1.0 / cloth_w;
                   data[i + 1] = 1.0;
                   data[i + 2] = y * 1.0 / cloth_h; //-y * 1.0 / cloth_h;
-                  data[i + 3] = 0.1;
+                  data[i + 3] = mass;
                   i += 4;
                   t++;
               }
