@@ -23,9 +23,7 @@ var GPGPU2 = function (renderer,cloth_w,cloth_h) {
             
             //gl.getBufferSubData(gl.ARRAY_BUFFER,tempData,sourceAttrib.buffer);
             shader.bind(posData, prevposData, cfg);
-            debugger;
             prevposData = new Float32Array(posData);
-            debugger;
             //gl.enableVertexAttribArray(shader.attributes.a_prevpos);
             //gl.bindBuffer(gl.ARRAY_BUFFER, source.attributes['prev_pos'].buffer);
             //gl.vertexAttribPointer(shader.attributes.a_prevpos, 4, gl.FLOAT, false, 16, 0);
@@ -49,7 +47,6 @@ var GPGPU2 = function (renderer,cloth_w,cloth_h) {
             gl.bindBuffer(gl.ARRAY_BUFFER, target.attributes['position'].buffer);
             gl.getBufferSubData(gl.ARRAY_BUFFER, 0, arrBuffer);
             posData = new Float32Array(arrBuffer);
-            debugger;
 
             // Unbind the transform feedback buffer so subsequent attempts
             // to bind it to ARRAY_BUFFER work.

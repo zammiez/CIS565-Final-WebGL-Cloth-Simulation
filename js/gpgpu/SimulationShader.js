@@ -228,7 +228,7 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
         //TODO: don't need to re-create texture every frame.....put those into init
         gl.useProgram(program);
         var tempTexture = gl.createTexture();
-        //gl.activeTexture(gl.TEXTURE0);
+        gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, tempTexture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
@@ -236,12 +236,13 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, cWidth, cHeight, 0, gl.RGBA, gl.FLOAT, new Float32Array(tempData));
 
-        gl.activeTexture(gl.TEXTURE0);
+        //gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, tempTexture);
         gl.uniform1i(uniforms.u_texPos, 0);
 
         var tempPrevTexture = gl.createTexture();
         gl.activeTexture(gl.TEXTURE1);
+        //gl.activeTexture(null);
         gl.bindTexture(gl.TEXTURE_2D, tempPrevTexture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
@@ -249,7 +250,7 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, cWidth, cHeight, 0, gl.RGBA, gl.FLOAT, new Float32Array(prevData));
 
-        gl.activeTexture(gl.TEXTURE1);
+        //gl.activeTexture(gl.TEXTURE1);
         gl.bindTexture(gl.TEXTURE_2D, tempPrevTexture);
         gl.uniform1i(uniforms.u_texPrevPos, 1);
 

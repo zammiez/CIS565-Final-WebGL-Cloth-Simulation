@@ -239,7 +239,6 @@
               //WebGL 1+
           }
 
-          //mesh = new THREE.PointCloud(vbo_pos, material);
           mesh = new THREE.PointCloud(vbo_pos, material);
           //mesh = new THREE.Mesh(vbo_pos, material);
           window.addEventListener('start-simulation', onStartSimulation);
@@ -289,7 +288,6 @@
       function onStepSimulation(event) {
           cfg_ui.setPause(true);
           guiStep = true;
-          debugger;
       }
       function onWindowResize() {
           camera.aspect = window.innerWidth / window.innerHeight;
@@ -304,6 +302,21 @@
       function render() {
 
           requestAnimationFrame(render);
+
+          raycaster.setFromCamera(mouse, camera);
+
+          // calculate objects intersecting the picking ray
+          //var intersects = raycaster.intersectObjects(scene.children);
+          /*
+          for (var i = 0; i < intersects.length; i++) {
+
+              //intersects[i].object.position.x -= 0.001;
+              var interObject = intersects[i].object;
+              var interPoint = intersects[i].point;
+              debugger;
+
+          }
+          */
           if ((!cfg_ui.getPause())||guiStep) {
               simulationShader.setTimer(0.0002);
               timer += 1;
