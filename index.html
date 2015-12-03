@@ -42,7 +42,6 @@
     <script src="js/GeometryUtils.js"></script>
     <script src="js/gpgpu/SimulationShader.js"></script>
     <script src="lib/OrbitControls.js"></script>
-
     <script src="js/leap-0.6.4.min.js"></script>
     <script src="js/leap-plugins-0.1.6.1.js"></script>
     <script src="js/leap.rigged-hand-0.1.3.min.js"></script>
@@ -259,8 +258,8 @@
           }
 
           mesh = new THREE.PointCloud(vbo_pos, material);
-          mesh.name = "clothParticles";
-          //mesh = new THREE.Mesh(vbo_pos, material);
+          //mesh = new THREE.Points(vbo_pos, material);
+          
           window.addEventListener('start-simulation', onStartSimulation);
           window.addEventListener('step-simulation', onStepSimulation);
           window.addEventListener('mousemove', onMouseMove, false);
@@ -270,6 +269,7 @@
 
       function onMouseUp(event)
       {
+          if (moved) return;
           raycaster.setFromCamera(mouse, camera);
 
           // calculate objects intersecting the picking ray
