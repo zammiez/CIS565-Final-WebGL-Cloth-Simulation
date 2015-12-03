@@ -59,7 +59,8 @@ function simulationCommon() {
       //'float mass = 0.5;',
       'float xid = float( int(v_id)/int(u_clothWidth));',
       'float yid = v_id - u_clothWidth*xid;',
-      'if(u_newPinPos.w>=1.0 && length(pos.xyz-u_newPinPos.xyz)<0.5 ) pos.w=0.0;',
+      //'if(u_newPinPos.w>=1.0 && length(pos.xyz-u_newPinPos.xyz)<0.3 ) pos.w=0.0;',
+      'if(u_newPinPos.w>=1.0 && u_newPinPos.x == v_id ) pos.w=0.0;',
       'bool pinBoolean = (pos.w<=0.0);',//Pin1
       'if(!pinBoolean) pinBoolean = (xid<=1.0)&&(yid<=1.0)&&(u_pins.x>0.0);',
       'if(!pinBoolean) pinBoolean = (xid>=u_clothWidth-2.0)&&(yid<=1.0)&&(u_pins.y>0.0);',//Pin2
@@ -73,7 +74,8 @@ function simulationCommon() {
       ' vec4 texPrevPos = texture(u_texPrevPos,coord);',
       'vec3 F = vec3(0.0);',
       //'F.y = -9.8*mass;',
-      'F.y = -9.8*pos.w;',
+      //'F.y = -9.8*pos.w;',
+      'F.y = -0.0*pos.w;',
       ' vec3 vel = (texPos.xyz-texPrevPos.xyz)/timestep;',
       'F+=DAMPING*vel;',
       'F.x+=u_wind*0.3;',
