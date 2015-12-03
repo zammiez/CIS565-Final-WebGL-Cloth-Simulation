@@ -104,7 +104,7 @@
       var originGeometry, cube, mesh, material;
       var roomMesh,sphereMesh;
 
-      var data, texture, points;
+      var data, vtxIds, texture, points;
 
       var guiStep = false;
       //var controls;
@@ -204,12 +204,19 @@
           cloth_w = cloth_h;
 
           data = new Float32Array(cloth_w * cloth_h * 4);
+          vtxIds = new Float32Array(cloth_w * cloth_h * 4);
           for (var i = 0, t = 0, x = 0; x < cloth_w; x++) {
               for (var y = 0; y < cloth_h; y++) {
                   data[i + 0] = x * 1.0 / cloth_w;
                   data[i + 1] = 1.0;
                   data[i + 2] = y * 1.0 / cloth_h; //-y * 1.0 / cloth_h;
-                  data[i + 3] = t;
+                  data[i + 3] = 0.1;
+
+                  vtxIds[i + 0] = t;
+                  vtxIds[i + 1] = t;
+                  vtxIds[i + 2] = t;
+                  vtxIds[i + 3] = t;
+
                   i += 4;
                   t++;
               }
@@ -217,7 +224,9 @@
           if (isWebGL2) {
               vbo_pos = new THREE.BufferGeometry();
               vbo_pos.addAttribute('position', new THREE.BufferAttribute(data, 4));
-              //vbo_pos.addAttribute('prev_pos', new THREE.BufferAttribute(data, 4));
+              vbo_pos.addAttribute('color', new THREE.BufferAttribute(data, 4));
+              vbo_pos.addAttribute('trytry', new THREE.BufferAttribute(vtxIds, 4));
+
               vbo_pos2 = vbo_pos.clone();
               material = new THREE.ShaderMaterial({
                   uniforms: {
@@ -258,7 +267,7 @@
                   data[i + 0] = x * 1.0 / cloth_w;
                   data[i + 1] = 1.0;
                   data[i + 2] = y * 1.0 / cloth_h; //-y * 1.0 / cloth_h;
-                  data[i + 3] = t;
+                  data[i + 3] = 0.1;
                   i += 4;
                   t++;
               }
@@ -266,11 +275,15 @@
 
           vbo_pos = new THREE.BufferGeometry();
           vbo_pos.addAttribute('position', new THREE.BufferAttribute(data, 4));
-          //vbo_pos.addAttribute('prev_pos', new THREE.BufferAttribute(data, 4));
+          vbo_pos.addAttribute('color', new THREE.BufferAttribute(data, 4));
+          vbo_pos.addAttribute('trytry', new THREE.BufferAttribute(vtxIds, 4));
           vbo_pos2 = vbo_pos.clone();
           material = new THREE.ShaderMaterial({
               uniforms: {
                   "pointSize": { type: "f", value: pointSize }
+              },
+              attributes: {
+                  "trytry": {type:"f",value:[]}
               },
               vertexShader: document.getElementById('vs-particles-2').textContent,
               fragmentShader: document.getElementById('fs-particles-2').textContent,

@@ -14,7 +14,7 @@ function simulationCommon() {
         'uniform float u_clothWidth;',
         'uniform float u_clothHeight;',
         'uniform float u_wind;',
-        'uniform float mass;',
+        //'uniform float mass;',
         'uniform vec2 Str;',
         'uniform vec2 Shr;',
         'uniform vec2 Bnd;',
@@ -70,7 +70,8 @@ function simulationCommon() {
       ' vec4 texPos = texture(u_texPos,coord);',
       ' vec4 texPrevPos = texture(u_texPrevPos,coord);',
       'vec3 F = vec3(0.0);',
-      'F.y = -9.8*mass;',//gravity  well later...
+      //'F.y = -9.8*mass;',
+      'F.y = -9.8*pos.w;',
       ' vec3 vel = (texPos.xyz-texPrevPos.xyz)/timestep;',
       'F+=DAMPING*vel;',
       'F.x+=u_wind*0.3;',
@@ -103,7 +104,7 @@ function simulationCommon() {
       '	F += springForce;',
       '};',
 
-      'vec3 acc = F/mass;', // acc = F/m
+      'vec3 acc = F/pos.w;', // acc = F/m
       'vel = vel+ acc*timestep;',//v = v0+a*t
 
       'if(pinBoolean); else pos.xyz += vel*timestep;',
@@ -118,7 +119,7 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
 
   var attributes = {
       a_position: 0,
-     // a_prevpos: 1,
+      a_trytry: 1,
   };
 
   function createProgram () {
@@ -137,18 +138,19 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
        // '#extension GL_ARB_explicit_uniform_location : require',
         'precision ' + renderer.getPrecision() + ' float;',
       'in vec4 a_position;',
-      //'attribute vec4 a_prevpos;',
+      'in vec4 a_trytry;',
 
       'out vec4 v_prevpos;',
       simulationCommon(),
 
       'void main() {',
       '  vec4 pos = a_position;',
-      'float vid = pos.w;',
+      //'float vid = pos.w;',
       '  v_prevpos = pos;',
-      ' pos = runSimulation(pos,vid);',
+      //' pos = runSimulation(pos,vid);',
+      ' pos = runSimulation(pos,a_trytry.x);',
      '  // Write new position out',
-     '  gl_Position =vec4(pos.xyz,vid);',
+     '  gl_Position =vec4(pos.xyz,pos.w);',
       '}'
     ].join('\n'));
 
@@ -260,7 +262,7 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
         gl.uniform1f(uniforms.u_clothHeight, cHeight);
         gl.uniform1f(uniforms.u_wind, cfg.getWindForce());
 
-        gl.uniform1f(uniforms.mass, 0.1);
+        //gl.uniform1f(uniforms.mass, 0.1);
         gl.uniform2f(uniforms.Str, cfg.getKsString(), -cfg.getKdString());
         gl.uniform2f(uniforms.Shr, cfg.getKsShear(), -cfg.getKdShear());
         gl.uniform2f(uniforms.Bnd, cfg.getKsBend(), -cfg.getKdBend());

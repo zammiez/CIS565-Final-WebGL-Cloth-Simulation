@@ -24,9 +24,10 @@ var GPGPU2 = function (renderer,cloth_w,cloth_h) {
             //gl.getBufferSubData(gl.ARRAY_BUFFER,tempData,sourceAttrib.buffer);
             shader.bind(posData, prevposData, cfg);
             prevposData = new Float32Array(posData);
-            //gl.enableVertexAttribArray(shader.attributes.a_prevpos);
-            //gl.bindBuffer(gl.ARRAY_BUFFER, source.attributes['prev_pos'].buffer);
-            //gl.vertexAttribPointer(shader.attributes.a_prevpos, 4, gl.FLOAT, false, 16, 0);
+
+            gl.enableVertexAttribArray(shader.attributes.a_trytry);
+            gl.bindBuffer(gl.ARRAY_BUFFER, source.attributes['trytry'].buffer);
+            gl.vertexAttribPointer(shader.attributes.a_trytry, 4, gl.FLOAT, false, 16, 0);
 
             gl.enableVertexAttribArray(shader.attributes.a_position);
             gl.bindBuffer(gl.ARRAY_BUFFER, sourceAttrib.buffer);
