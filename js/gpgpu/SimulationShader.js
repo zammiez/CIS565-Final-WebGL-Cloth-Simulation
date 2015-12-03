@@ -59,7 +59,7 @@ function simulationCommon() {
       //'float mass = 0.5;',
       'float xid = float( int(v_id)/int(u_clothWidth));',
       'float yid = v_id - u_clothWidth*xid;',
-      'if(u_newPinPos.w>=1.0 && length(pos.xyz-u_newPinPos.xyz)<0.1 ) pos.w=0.0;',
+      'if(u_newPinPos.w>=1.0 && length(pos.xyz-u_newPinPos.xyz)<0.5 ) pos.w=0.0;',
       'bool pinBoolean = (pos.w<=0.0);',//Pin1
       'if(!pinBoolean) pinBoolean = (xid<=1.0)&&(yid<=1.0)&&(u_pins.x>0.0);',
       'if(!pinBoolean) pinBoolean = (xid>=u_clothWidth-2.0)&&(yid<=1.0)&&(u_pins.y>0.0);',//Pin2

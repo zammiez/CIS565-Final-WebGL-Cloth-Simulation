@@ -249,6 +249,7 @@
           }
 
           mesh = new THREE.PointCloud(vbo_pos, material);
+          mesh.name = "clothParticles";
           //mesh = new THREE.Mesh(vbo_pos, material);
           window.addEventListener('start-simulation', onStartSimulation);
           window.addEventListener('step-simulation', onStepSimulation);
@@ -320,30 +321,37 @@
           raycaster.setFromCamera(mouse, camera);
 
           // calculate objects intersecting the picking ray
-          //var intersects = raycaster.intersectObjects(scene.children);
-          /*
+          var intersects = raycaster.intersectObjects(scene.children);
+          //*
+          var newPinpin = [0.2, 0.6, 0.6, 1.0];
           for (var i = 0; i < intersects.length; i++) {
 
               //intersects[i].object.position.x -= 0.001;
               var interObject = intersects[i].object;
-              var interPoint = intersects[i].point;
-              debugger;
+              if (interObject.name == "clothParticles") {
+                  var interPoint = intersects[i].point;
+                  newPinpin[0] = interPoint.x;
+                  newPinpin[1] = interPoint.y;
+                  newPinpin[2] = interPoint.z;
+                  debugger;
+                  break;
+              }
 
           }
-          */
+          //*/
           if ((!cfg_ui.getPause())||guiStep) {
               simulationShader.setTimer(0.0002);
               timer += 1;
 
               // Ugly hack to make the particle mesh always draw last
               scene.remove(mesh); scene.add(mesh);
-
+              
               if (isWebGL2) {
                   if (count % 2 === 0) {
-                      gpgpu.pass(simulationShader, vbo_pos2, vbo_pos, cfg_ui);
+                      gpgpu.pass(simulationShader, vbo_pos2, vbo_pos, cfg_ui, newPinpin);
                       mesh.geometry = vbo_pos2;
                   } else {
-                      gpgpu.pass(simulationShader, vbo_pos, vbo_pos2, cfg_ui);
+                      gpgpu.pass(simulationShader, vbo_pos, vbo_pos2, cfg_ui, newPinpin);
                       mesh.geometry = vbo_pos;
                   }
               };

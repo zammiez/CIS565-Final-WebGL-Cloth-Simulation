@@ -14,7 +14,7 @@ var GPGPU2 = function (renderer,cloth_w,cloth_h) {
         posData = new Float32Array(data);
         prevposData = new Float32Array(data);
     }
-    this.pass = function (shader, source, target,cfg) {
+    this.pass = function (shader, source, target, cfg, newPinpin) {
 
         var sourceAttrib = source.attributes['position'];
         if (target.attributes['position'].buffer && sourceAttrib.buffer) {
@@ -22,7 +22,7 @@ var GPGPU2 = function (renderer,cloth_w,cloth_h) {
             //posData = new Float32Array(sourceAttrib.array);
             
             //gl.getBufferSubData(gl.ARRAY_BUFFER,tempData,sourceAttrib.buffer);
-            newPinpin = [0.6, 0.6, 0.6, 1.0];
+            
             shader.bind(posData, prevposData, cfg, newPinpin);
             prevposData = new Float32Array(posData);
 
