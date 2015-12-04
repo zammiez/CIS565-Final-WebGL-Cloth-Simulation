@@ -112,8 +112,10 @@ function simulationCommon() {
       'vel = vel+ acc*timestep;',//v = v0+a*t
 
       'if(pinBoolean); else pos.xyz += vel*timestep;',
-      'if(pos.y<-3.0) pos.y = -3.0;',//ground
+      //'if(pos.y<-3.0) pos.y = -3.0;',//ground
       'sphereCollision(pos.xyz,vec3(0.5,0.0,0.3),0.3);',
+      //'if(pos.xyz == texPos.xyz) pos.y+=0.01;else pos.y = texPos.y+0.01;',
+      //'pos.x+=0.01;',
     '  return pos;',
       '}',
     ].join('\n');
@@ -137,7 +139,7 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
     var fragmentShader = gl.createShader( gl.FRAGMENT_SHADER );
 
     gl.shaderSource(vertexShader, [
-        '#version 300 es',
+       '#version 300 es',
        // '#extension GL_ARB_explicit_attrib_location : require',
        // '#extension GL_ARB_explicit_uniform_location : require',
         'precision ' + renderer.getPrecision() + ' float;',
@@ -233,31 +235,32 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
         //http://stackoverflow.com/questions/17262574/packing-vertex-data-into-a-webgl-texture
         //TODO: don't need to re-create texture every frame.....put those into init
         gl.useProgram(program);
+
         var tempTexture = gl.createTexture();
-        gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, tempTexture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, cWidth, cHeight, 0, gl.RGBA, gl.FLOAT, new Float32Array(tempData));
-
-        //gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, tempTexture);
-        gl.uniform1i(uniforms.u_texPos, 0);
+        gl.bindTexture(gl.TEXTURE_2D, null);
 
         var tempPrevTexture = gl.createTexture();
-        gl.activeTexture(gl.TEXTURE1);
-        //gl.activeTexture(null);
         gl.bindTexture(gl.TEXTURE_2D, tempPrevTexture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, cWidth, cHeight, 0, gl.RGBA, gl.FLOAT, new Float32Array(prevData));
+        gl.bindTexture(gl.TEXTURE_2D, null);
 
-        //gl.activeTexture(gl.TEXTURE1);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, tempTexture);
+
+        gl.activeTexture(gl.TEXTURE1);
         gl.bindTexture(gl.TEXTURE_2D, tempPrevTexture);
+
+        gl.uniform1i(uniforms.u_texPos, 0);
         gl.uniform1i(uniforms.u_texPrevPos, 1);
 
         //gl.uniform1f(uniforms.u_timer, 0.003);
