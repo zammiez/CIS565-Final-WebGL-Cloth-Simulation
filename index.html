@@ -127,6 +127,7 @@
 
       var raycaster = new THREE.Raycaster();
       var mouse = new THREE.Vector2();
+      var testDragMesh;
 
       function onMouseMove(event) {
           event.preventDefault();
@@ -194,12 +195,21 @@
           roomMesh = new THREE.Mesh(roomGeometry, roomMaterial);
           roomMesh.doubleSided = true;
           scene.add(roomMesh);
-          var sphereMaterial = new THREE.MeshFaceMaterial(roomMaterialArray);
+          var sphereMaterial = new THREE.MeshLambertMaterial({ color: 0x00008B });
           var sphereGeom = new THREE.SphereGeometry(0.3, 100, 100);
           sphereMesh = new THREE.Mesh(sphereGeom, sphereMaterial);
           sphereMesh.position.x = 0.5;
           sphereMesh.position.z = 0.3;
           scene.add(sphereMesh);
+
+          //https://www.script-tutorials.com/webgl-with-three-js-lesson-10/
+          var testDragGeo = new THREE.SphereGeometry(0.08, 10, 10);
+          var testDragMat = new THREE.MeshPhongMaterial({ color: 0xEE00EE });
+          testDragMesh = new THREE.Mesh(testDragGeo, testDragMat);
+          testDragMesh.position.x = 1.0;
+          testDragMesh.position.y = 1.0;
+          scene.add(testDragMesh);
+
           //
           if (!isWebGL2 && !renderer.context.getExtension('OES_texture_float')) {
               alert('OES_texture_float is not :(');
@@ -263,10 +273,18 @@
           window.addEventListener('start-simulation', onStartSimulation);
           window.addEventListener('step-simulation', onStepSimulation);
           window.addEventListener('mousemove', onMouseMove, false);
-          window.addEventListener('mousedown', function () { moved = false; });
+          window.addEventListener('mousedown', onMouseDown);
           window.addEventListener('mouseup', onMouseUp);
       }
+      function onMouseDown(event)
+      {
+          moved = false;
+          var mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+          var mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+          var vector = new THREE.Vector3(mouseX, mouseY, 1);
+          vector.unproject(camera);
 
+      }
       function onMouseUp(event)
       {
           if (moved) return;
@@ -280,8 +298,9 @@
               var interP = intersects[0].point;
               newPinpin[0] = tryid;
 
-              var mouseGeo = new THREE.SphereGeometry(0.03, 10, 10);
-              var mouseMesh = new THREE.Mesh(mouseGeo, roomMaterial);
+              var mouseGeo = new THREE.SphereGeometry(0.05, 10, 10);
+              var tempMat =  new THREE.MeshBasicMaterial( {color: 0xffff00} );
+              var mouseMesh = new THREE.Mesh(mouseGeo, tempMat);
               mouseMesh.position.x = interP.x;
               mouseMesh.position.y = interP.y;
               mouseMesh.position.z = interP.z;
