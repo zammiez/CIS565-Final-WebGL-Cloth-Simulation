@@ -109,7 +109,6 @@
       var roomMaterial;
       var guiStep = false;
       //var controls;
-      var newPinpin = [0.2, 0.6, 0.6, 0.0];
       var fboParticles, rtTexturePos, rtTexturePos2, simulationShader;
 
       var width = getQueryValue('width', 1024);
@@ -127,10 +126,15 @@
 
       var raycaster = new THREE.Raycaster();
       var mouse = new THREE.Vector2();
-      var testDragMesh, plane, selection,clock;
+      var usrControl = {
+          testDragMesh: null,
+          plane: null,
+          selection: null,
+          itrOffset: new THREE.Vector3(),
+          pinObjects: [],
+          uniformPins: [0.0,0.0,0.0,0.0],
+      };
 
-      var itrOffset = new THREE.Vector3();
-      var pinObjects = [];
       function onMouseMove(event) {
           event.preventDefault();
           // Get mouse position
@@ -143,20 +147,26 @@
           // Set the raycaster position
           raycaster.set(camera.position, vector.sub(camera.position).normalize());
 
-          if (selection) {
+          if (usrControl.selection) {
               // Check the position where the plane is intersected
-              var intersects = raycaster.intersectObject(plane);
+              var intersects = raycaster.intersectObject(usrControl.plane);
               // Reposition the object based on the intersection point with the plane
-              selection.position.copy(intersects[0].point.sub(itrOffset));
+              usrControl.selection.position.copy(intersects[0].point.sub(usrControl.itrOffset));
+              usrControl.uniformPins[0] = usrControl.selection.position.x;
+              usrControl.uniformPins[1] = usrControl.selection.position.y;
+              usrControl.uniformPins[2] = usrControl.selection.position.z;
+              usrControl.uniformPins[3] = 1.0;
+
           } else {
               // Update position of the plane if need
-              var intersects = raycaster.intersectObjects(pinObjects);
+              usrControl.uniformPins[3] = 0.0;
+              var intersects = raycaster.intersectObjects(usrControl.pinObjects);
               if (intersects.length > 0) {
-                  plane.position.copy(intersects[0].object.position);
-                  plane.lookAt(camera.position);
+                  usrControl.plane.position.copy(intersects[0].object.position);
+                  usrControl.plane.lookAt(camera.position);
               }
               if (!camControl.enabled) {
-                  camControl = new THREE.OrbitControls(camera);
+                  camControl = new THREE.OrbitControls(camera);//??!!
                   //camControl.enabled = true;
               }
           }
@@ -231,18 +241,18 @@
           scene.add(sphereMesh);
 
           //Move plane
-          plane = new THREE.Mesh(new THREE.PlaneBufferGeometry(500, 500, 8, 8), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-          plane.visible = false;
-          scene.add(plane);
+          usrControl.plane = new THREE.Mesh(new THREE.PlaneBufferGeometry(500, 500, 8, 8), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+          usrControl.plane.visible = false;
+          scene.add(usrControl.plane);
 
           //https://www.script-tutorials.com/webgl-with-three-js-lesson-10/
           var testDragGeo = new THREE.SphereGeometry(0.08, 10, 10);
           var testDragMat = new THREE.MeshPhongMaterial({ color: 0xEE00EE });
-          testDragMesh = new THREE.Mesh(testDragGeo, testDragMat);
-          testDragMesh.position.x = 1.0;
-          testDragMesh.position.y = 1.0;
-          scene.add(testDragMesh);
-          pinObjects.push(testDragMesh);
+          usrControl.testDragMesh = new THREE.Mesh(testDragGeo, testDragMat);
+          usrControl.testDragMesh.position.x = 0.0;
+          usrControl.testDragMesh.position.y = 1.0;
+          scene.add(usrControl.testDragMesh);
+          usrControl.pinObjects.push(usrControl.testDragMesh);
           //
           if (!isWebGL2 && !renderer.context.getExtension('OES_texture_float')) {
               alert('OES_texture_float is not :(');
@@ -318,25 +328,28 @@
           vector.unproject(camera);
           raycaster.set(camera.position, vector.sub(camera.position).normalize());
           //var intersects = raycaster.intersectObjects(scene.children);
-          var intersects = raycaster.intersectObjects(pinObjects);
+          var intersects = raycaster.intersectObjects(usrControl.pinObjects);
           if (intersects.length > 0) {
               camControl.enabled = false;
 
-              selection = intersects[0].object;
-              var intersects = raycaster.intersectObject(plane);
-              itrOffset.copy(intersects[0].point).sub(plane.position);//???!!
+              usrControl.selection = intersects[0].object;
+              var intersects = raycaster.intersectObject(usrControl.plane);
+              usrControl.itrOffset.copy(intersects[0].point).sub(usrControl.plane.position);//???!!
               debugger;
           }
       }
       function onMouseUp(event)
       {
-          selection = null;
+          usrControl.selection = null;
           //camControl.enabled = true;
 
       }
       function onStartSimulation(event){
           //TODO: reset and start simulation
           //cfg_ui.setPause(false);
+          usrControl.testDragMesh.position.x = 0.0;
+          usrControl.testDragMesh.position.y = 1.0;
+
           cloth_h = cfg_ui.getClothDim();
           cloth_w = cloth_h;
           var mass = cfg_ui.getParticleMass();
@@ -412,18 +425,18 @@
               
               if (isWebGL2) {
                   if (count % 2 === 0) {
-                      gpgpu.pass(simulationShader, vbo_pos2, vbo_pos, cfg_ui, newPinpin);
+                      gpgpu.pass(simulationShader, vbo_pos2, vbo_pos, cfg_ui, usrControl.uniformPins);
                       mesh.geometry = vbo_pos2;
                   } else {
-                      gpgpu.pass(simulationShader, vbo_pos, vbo_pos2, cfg_ui, newPinpin);
+                      gpgpu.pass(simulationShader, vbo_pos, vbo_pos2, cfg_ui, usrControl.uniformPins);
                       mesh.geometry = vbo_pos;
                   }
               };
               count++;
               guiStep = !guiStep;
           }
-          var delta = clock.getDelta();
-          camControl.update(delta);
+
+          camControl.update();
           renderer.render(scene, camera);
       }
 

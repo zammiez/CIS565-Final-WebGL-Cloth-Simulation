@@ -60,9 +60,12 @@ function simulationCommon() {
       'float xid = float( int(v_id)/int(u_clothWidth));',
       'float yid = v_id - u_clothWidth*xid;',
       //'if(u_newPinPos.w>=1.0 && length(pos.xyz-u_newPinPos.xyz)<0.3 ) pos.w=0.0;',
-      'if(u_newPinPos.w>=1.0 && u_newPinPos.x == v_id ) pos.w=0.0;',
+      //'if(u_newPinPos.w>=1.0 && u_newPinPos.x == v_id ) pos.w=0.0;',
       'bool pinBoolean = (pos.w<=0.0);',//Pin1
-      'if(!pinBoolean) pinBoolean = (xid<=1.0)&&(yid<=1.0)&&(u_pins.x>0.0);',
+      'if(!pinBoolean) {',
+      ' pinBoolean = (xid<=1.0)&&(yid<=1.0)&&(u_pins.x>0.0);',
+      ' if(u_newPinPos.w==1.0&&pinBoolean) pos.xyz = u_newPinPos.xyz;',
+      '}',
       'if(!pinBoolean) pinBoolean = (xid>=u_clothWidth-2.0)&&(yid<=1.0)&&(u_pins.y>0.0);',//Pin2
       'if(!pinBoolean) pinBoolean = (xid<=1.0)&&(yid>=u_clothWidth-2.0)&&(u_pins.z>0.0);',//Pin3
       'if(!pinBoolean) pinBoolean = (xid>=u_clothWidth-2.0)&&(yid>=u_clothWidth-2.0)&&(u_pins.w>0.0);',//Pin4
