@@ -127,13 +127,39 @@
 
       var raycaster = new THREE.Raycaster();
       var mouse = new THREE.Vector2();
-      var testDragMesh;
+      var testDragMesh, plane, selection,clock;
 
+      var itrOffset = new THREE.Vector3();
+      var pinObjects = [];
       function onMouseMove(event) {
           event.preventDefault();
+          // Get mouse position
+          var mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+          var mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
 
-          mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-          mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+          // Get 3D vector from 3D mouse position using 'unproject' function
+          var vector = new THREE.Vector3(mouseX, mouseY, 1);
+          vector.unproject(camera);
+          // Set the raycaster position
+          raycaster.set(camera.position, vector.sub(camera.position).normalize());
+
+          if (selection) {
+              // Check the position where the plane is intersected
+              var intersects = raycaster.intersectObject(plane);
+              // Reposition the object based on the intersection point with the plane
+              selection.position.copy(intersects[0].point.sub(itrOffset));
+          } else {
+              // Update position of the plane if need
+              var intersects = raycaster.intersectObjects(pinObjects);
+              if (intersects.length > 0) {
+                  plane.position.copy(intersects[0].object.position);
+                  plane.lookAt(camera.position);
+              }
+              if (!camControl.enabled) {
+                  camControl = new THREE.OrbitControls(camera);
+                  //camControl.enabled = true;
+              }
+          }
       }
 
       function init() {
@@ -167,9 +193,10 @@
           camera.position.y = 1.5;
           camera.position.z = 4;
           camera.lookAt(scene.position);
-          camControl = new THREE.OrbitControls(camera, renderer.domElement);
 
-          camControl.addEventListener('change', function () { moved = true;});
+          clock = new THREE.Clock();
+
+          camControl = new THREE.OrbitControls(camera, renderer.domElement);
 
           scene.add(camera);
 
@@ -191,6 +218,7 @@
             new THREE.MeshBasicMaterial({ map: backImage, side: THREE.BackSide })
           ];
           roomMaterial = new THREE.MeshFaceMaterial(roomMaterialArray);
+
           var roomGeometry = new THREE.BoxGeometry(10.24, 6, 5.12);
           roomMesh = new THREE.Mesh(roomGeometry, roomMaterial);
           roomMesh.doubleSided = true;
@@ -202,6 +230,11 @@
           sphereMesh.position.z = 0.3;
           scene.add(sphereMesh);
 
+          //Move plane
+          plane = new THREE.Mesh(new THREE.PlaneBufferGeometry(500, 500, 8, 8), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+          plane.visible = false;
+          scene.add(plane);
+
           //https://www.script-tutorials.com/webgl-with-three-js-lesson-10/
           var testDragGeo = new THREE.SphereGeometry(0.08, 10, 10);
           var testDragMat = new THREE.MeshPhongMaterial({ color: 0xEE00EE });
@@ -209,7 +242,7 @@
           testDragMesh.position.x = 1.0;
           testDragMesh.position.y = 1.0;
           scene.add(testDragMesh);
-
+          pinObjects.push(testDragMesh);
           //
           if (!isWebGL2 && !renderer.context.getExtension('OES_texture_float')) {
               alert('OES_texture_float is not :(');
@@ -273,8 +306,8 @@
           window.addEventListener('start-simulation', onStartSimulation);
           window.addEventListener('step-simulation', onStepSimulation);
           window.addEventListener('mousemove', onMouseMove, false);
-          window.addEventListener('mousedown', onMouseDown);
-          window.addEventListener('mouseup', onMouseUp);
+          window.addEventListener('mousedown', onMouseDown,false);
+          window.addEventListener('mouseup', onMouseUp,false);
       }
       function onMouseDown(event)
       {
@@ -283,29 +316,23 @@
           var mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
           var vector = new THREE.Vector3(mouseX, mouseY, 1);
           vector.unproject(camera);
+          raycaster.set(camera.position, vector.sub(camera.position).normalize());
+          //var intersects = raycaster.intersectObjects(scene.children);
+          var intersects = raycaster.intersectObjects(pinObjects);
+          if (intersects.length > 0) {
+              camControl.enabled = false;
 
+              selection = intersects[0].object;
+              var intersects = raycaster.intersectObject(plane);
+              itrOffset.copy(intersects[0].point).sub(plane.position);//???!!
+              debugger;
+          }
       }
       function onMouseUp(event)
       {
-          if (moved) return;
-          raycaster.setFromCamera(mouse, camera);
+          selection = null;
+          //camControl.enabled = true;
 
-          // calculate objects intersecting the picking ray
-          var intersects = raycaster.intersectObject(mesh);
-          //*
-          if (intersects.length > 0) {
-              var tryid = intersects[0].index;
-              var interP = intersects[0].point;
-              newPinpin[0] = tryid;
-
-              var mouseGeo = new THREE.SphereGeometry(0.05, 10, 10);
-              var tempMat =  new THREE.MeshBasicMaterial( {color: 0xffff00} );
-              var mouseMesh = new THREE.Mesh(mouseGeo, tempMat);
-              mouseMesh.position.x = interP.x;
-              mouseMesh.position.y = interP.y;
-              mouseMesh.position.z = interP.z;
-              scene.add(mouseMesh);
-          }
       }
       function onStartSimulation(event){
           //TODO: reset and start simulation
@@ -375,7 +402,8 @@
               count++;
               guiStep = !guiStep;
           }
-          camControl.update();
+          var delta = clock.getDelta();
+          camControl.update(delta);
           renderer.render(scene, camera);
       }
 

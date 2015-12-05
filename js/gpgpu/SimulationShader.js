@@ -143,6 +143,8 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
        // '#extension GL_ARB_explicit_attrib_location : require',
        // '#extension GL_ARB_explicit_uniform_location : require',
         'precision ' + renderer.getPrecision() + ' float;',
+        //'precision highp float;',
+        //'precision mediump float;',
       'in vec4 a_position;',
       'in vec4 a_trytry;',
 
@@ -163,6 +165,8 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
     gl.shaderSource(fragmentShader, [
       '#version 300 es',
       'precision ' + renderer.getPrecision() + ' float;',
+      //'precision highp float;',
+      //'precision mediump float;',
       'in vec4 v_prevpos;',
       'void main() {',
         //'gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);',??????
