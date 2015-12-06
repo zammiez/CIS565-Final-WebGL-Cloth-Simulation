@@ -75,11 +75,8 @@ var GPGPU = function (renderer) {
     };
 
     this.pass = function (shader, target) {
-        debugger;
         mesh.material = shader.material;
-        debugger;
         renderer.render(scene, camera, target, false);
-        debugger;
     };
 
     this.out = function (shader) {

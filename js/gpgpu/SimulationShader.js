@@ -14,6 +14,7 @@ function simulationCommon() {
         'uniform float u_clothWidth;',
         'uniform float u_clothHeight;',
         'uniform float u_wind;',
+        //'uniform float mass;',
         'uniform vec2 Str;',
         'uniform vec2 Shr;',
         'uniform vec2 Bnd;',
@@ -128,133 +129,6 @@ function simulationCommon() {
       '}',
     ].join('\n');
 }
-
-function simulationCommon1() {
-    //UBO:
-    //http://www.opentk.com/node/2926
-    return [
-        //'layout(std140) uniform u_tryUBO{',
-        //'   vec4 uboTry1;',
-        //'   vec4 uboTry2;',
-        //'};',
-        'uniform float u_timer;',
-        'uniform float u_clothWidth;',
-        'uniform float u_clothHeight;',
-        'uniform float u_wind;',
-        'uniform vec2 Str;',
-        'uniform vec2 Shr;',
-        'uniform vec2 Bnd;',
-        'uniform vec4 u_pins;',
-        'uniform vec4 u_newPinPos;',
-
-        'uniform sampler2D u_texPos;',
-        'uniform sampler2D u_texPrevPos;',
-        'float DAMPING = -0.0125;',
-        'void sphereCollision(inout vec3 x, vec3 center, float r)',
-        '{',
-        'r *= 1.01;',
-	    'vec3 delta = x - center;',
-        'float dist = length(delta);',
-        'if (dist < r) {',
-        '   x = center + delta*(r / dist);',
-        '}',
-    '} ',
-        'vec2 getNeighbor(int n, out float ks, out float kd)',
-        '{',
-            //structural springs (adjacent neighbors)
-      '	    if (n < 4){ ks = Str[0]; kd = Str[1]; }',	//ksStr, kdStr
-      '     if (n == 0)	return vec2(1.0, 0.0);',
-      '	    if (n == 1)	return vec2(0.0, -1.0);',
-      '	    if (n == 2)	return vec2(-1.0, 0.0);',
-      ' 	if (n == 3)	return vec2(0.0, 1.0);',
-            //shear springs (diagonal neighbors)
-      '     if (n<8) { ks = Shr[0]; kd = Shr[1]; } ',//ksShr,kdShr
-      '     if (n == 4) return vec2(1.0, -1.0);',
-      '     if (n == 5) return vec2(-1.0, -1.0);',
-      '     if (n == 6) return vec2(-1.0, 1.0);',
-      '     if (n == 7) return vec2(1.0, 1.0);',
-            //bend spring (adjacent neighbors 1 node away)                  //(TODO: far neighbor)
-      '     if (n<12) { ks =Bnd[0]; kd = Bnd[1]; }', //ksBnd,kdBnd
-      '     if (n == 8)	return vec2(2.0, 0.0);',
-      '     if (n == 9) return vec2(0.0, -2.0);',
-      '     if (n == 10) return vec2(-2.0, 0.0);',
-      '     if (n == 11) return vec2(0.0, 2.0);',
-                  //bend spring (adjacent neighbors 1 node away)                  //(TODO: far neighbor)
-      '     if (n<16) { ks =Bnd[0]; kd = Bnd[1]; }', //ksBnd,kdBnd
-      '     if (n == 12)	return vec2(15.0, 0.0);',
-      '     if (n == 13) return vec2(0.0, -15.0);',
-      '     if (n == 14) return vec2(-15.0, 0.0);',
-      '     if (n == 15) return vec2(0.0, 15.0);',
-      '     return vec2(0.0,0.0);',
-      '}',
-
-      'vec4 runSimulation(vec4 pos,float v_id) {',
-      //'float mass = 0.5;',
-      'float xid = float( int(v_id)/int(u_clothWidth));',
-      'float yid = v_id - u_clothWidth*xid;',
-      //'if(u_newPinPos.w>=1.0 && length(pos.xyz-u_newPinPos.xyz)<0.3 ) pos.w=0.0;',
-      //'if(u_newPinPos.w>=1.0 && u_newPinPos.x == v_id ) pos.w=0.0;',
-      'bool pinBoolean = (pos.w<=0.0);',//Pin1
-      'if(!pinBoolean) {',
-      ' pinBoolean = (xid<=1.0)&&(yid<=1.0)&&(u_pins.x>0.0);',
-      ' if(u_newPinPos.w==1.0&&pinBoolean) pos.xyz = u_newPinPos.xyz;',
-      '}',
-      'if(!pinBoolean) pinBoolean = (xid>=u_clothWidth-2.0)&&(yid<=1.0)&&(u_pins.y>0.0);',//Pin2
-      'if(!pinBoolean) pinBoolean = (xid<=1.0)&&(yid>=u_clothWidth-2.0)&&(u_pins.z>0.0);',//Pin3
-      'if(!pinBoolean) pinBoolean = (xid>=u_clothWidth-2.0)&&(yid>=u_clothWidth-2.0)&&(u_pins.w>0.0);',//Pin4
-      'if(pinBoolean) return pos;',
-      'vec2 coord;',
-      'coord = vec2(yid,u_clothWidth-1.0-xid)*(1.0/u_clothWidth);',
-      'float timestep = u_timer;',
-      ' vec4 texPos = texture2D(u_texPos,coord);',
-      ' vec4 texPrevPos = texture2D(u_texPrevPos,coord);',
-      'vec3 F = vec3(0.0);',
-      //'F.y = -9.8*mass;',
-      'F.y = -9.8*pos.w;',
-      //'F.y = -0.0*pos.w;',
-      ' vec3 vel = (texPos.xyz-texPrevPos.xyz)/timestep;',
-      'F+=DAMPING*vel;',
-      'F.x+=u_wind*0.3;',
-      'F.z+=u_wind*0.7;',
-
-      'float ks, kd;',
-
-      'for (int k = 0; k < 12; k++)',
-      '{',
-      '	vec2 nCoord = getNeighbor(k, ks, kd);',
-
-      '	float inv_cloth_size = 1.0 / (u_clothWidth);//size of a single patch in world space',
-      '	float rest_length = length(nCoord*inv_cloth_size);',
-
-      '	float nxid = xid + nCoord.x;',
-      '	float nyid = yid + nCoord.y;',
-      '	if (nxid < 0.0 || nxid>(u_clothWidth-1.0) || nyid<0.0 || nyid>(u_clothWidth-1.0)) continue;',
-      '	nCoord = vec2(nyid,u_clothWidth-1.0-nxid) / u_clothWidth;',
-      '	vec3 posNP = texture2D(u_texPos, nCoord).xyz;',
-      '	vec3 prevNP = texture2D(u_texPrevPos, nCoord).xyz;',
-
-      '	vec3 v2 = (posNP - prevNP) / timestep;',
-      '	vec3 deltaP = pos.xyz - posNP;',
-      '	vec3 deltaV = vel - v2;',
-      '	float dist = length(deltaP);',
-      '	float   leftTerm = -ks * (dist - rest_length);',
-      '	float  rightTerm = kd * (dot(deltaV, deltaP) / dist);',
-      '	vec3 springForce = (leftTerm + rightTerm)* normalize(deltaP);',
-      '	F += springForce;',
-      '};',
-
-      'vec3 acc = F/pos.w;', // acc = F/m
-      'vel = vel+ acc*timestep;',//v = v0+a*t
-
-      'if(pinBoolean); else pos.xyz += vel*timestep;',
-      //'if(pos.y<-3.0) pos.y = -3.0;',//ground
-      'sphereCollision(pos.xyz,vec3(0.5,0.45,0.4),0.3);',
-      //'if(pos.xyz == texPos.xyz) pos.y+=0.01;else pos.y = texPos.y+0.01;',
-      //'pos.x+=0.01;',
-    '  return pos;',
-      '}',
-    ].join('\n');
-}
 GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
   var gl = renderer.context;
 
@@ -275,8 +149,11 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
 
     gl.shaderSource(vertexShader, [
        '#version 300 es',
+       // '#extension GL_ARB_explicit_attrib_location : require',
+       // '#extension GL_ARB_explicit_uniform_location : require',
         'precision ' + renderer.getPrecision() + ' float;',
-
+        //'precision highp float;',
+        //'precision mediump float;',
       'in vec4 a_position;',
       'in vec4 a_trytry;',
 
@@ -411,7 +288,7 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
         gl.uniform2f(uniforms.Bnd, cfg.getKsBend(), -cfg.getKdBend());
         
         gl.uniform4f(uniforms.u_pins, cfg.getPin1(), cfg.getPin2(), cfg.getPin3(), cfg.getPin4());
-        gl.uniform4f(uniforms.u_newPinPos, usrCtrl.uniformPins.x, usrCtrl.uniformPins.y, usrCtrl.uniformPins.z, usrCtrl.uniformPins.w);
+        gl.uniform4f(uniforms.u_newPinPos, usrCtrl.uniformPins[0], usrCtrl.uniformPins[1], usrCtrl.uniformPins[2], usrCtrl.uniformPins[3]);
         /*
         //UBO:
         //https://www.packtpub.com/books/content/opengl-40-using-uniform-blocks-and-uniform-buffer-objects
@@ -448,56 +325,62 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
 
 };
 
-GPGPU2.SimulationShader1 = function () {
+
+GPGPU.SimulationShader = function (maxColliders) {
+
+    if (!maxColliders) maxColliders = 8;
 
     var material = new THREE.ShaderMaterial({
         uniforms: {
-              
-            u_timer: { type: "f", value: 0.003 },               //'uniform float u_timer;',
-            u_clothWidth: { type: "f", value: 50.0 },           //'uniform float u_clothWidth;',
-            u_clothHeight: { type: "f", value: 50.0 },          //'uniform float u_clothHeight;',
-            u_wind: { type: "f", value: 0.0 },                  //'uniform float u_wind;',
-            Str:{ type: "v2", value: new THREE.Vector2(850,0.25) }, //'uniform vec2 Str;',
-            Shr:{ type: "v2", value: new THREE.Vector2(850,0.25) }, //'uniform vec2 Shr;',
-            Bnd:{ type: "v2", value: new THREE.Vector2(2050,0.25) },//'uniform vec2 Bnd;',
-            u_pins: { type: "v4", value: usrControl.uniformPins },//'uniform vec4 u_pins;',
-            u_newPinPos: { type: "v4", value: new THREE.Vector4(1, 1, 0, 0) },//'uniform vec4 u_newPinPos;',
-
-            u_texPos: { type: "t", value: texture },            //'uniform sampler2D u_texPos;',
-            u_texPrevPos: { type: "t", value: texture },        //'uniform sampler2D u_texPrevPos;',
+            tPositions: { type: "t", value: texture },
+            origin: { type: "t", value: texture },
+            timer: { type: "f", value: 0 },
+            colliders: { type: "4fv", value: null },
         },
-   
 
         vertexShader: [
-            'varying vec2 vUv;',
+          'varying vec2 vUv;',
 
-            'void main() {',
-            '  vUv = vec2(uv.x, 1.0 - uv.y);',
-            '  gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
-            '}',
+          'void main() {',
+          '  vUv = vec2(uv.x, 1.0 - uv.y);',
+          '  gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
+          '}',
         ].join('\n'),
 
         fragmentShader: [
-            'varying vec2 vUv;',
+          'varying vec2 vUv;',
 
-            simulationCommon1(),
+          'uniform sampler2D tPositions;',
+          'uniform sampler2D origin;',
+          'uniform float timer;',
 
-            'void main() {',
-            '  vec4 pos = texture2D( u_texPos, vUv );',
+          'void main() {',
+          '  vec4 pos = texture2D( tPositions, vUv );',
+          '  pos.w = 0.0;',
 
-            '    pos = runSimulation(pos,1.0);',//ID!!! Later!!
+          '    pos = vec4(texture2D( origin, vUv ).xyz, 0.0);',
 
-            '  gl_FragColor = pos;',
-            '}',
+          '  // Write new position out',
+          '  gl_FragColor = pos;',
+          '}',
         ].join('\n'),
     });
-    debugger;
+
     return {
+
         material: material,
 
         setPositionsTexture: function (positions) {
 
-            material.uniforms.u_texPos.value = positions; //later...
+            material.uniforms.tPositions.value = positions;
+
+            return this;
+
+        },
+
+        setOriginsTexture: function (origins) {
+
+            material.uniforms.origin.value = origins;
 
             return this;
 
@@ -505,10 +388,12 @@ GPGPU2.SimulationShader1 = function () {
 
         setTimer: function (timer) {
 
-            material.uniforms.u_timer.value = timer;
+            material.uniforms.timer.value = timer;
 
             return this;
 
         }
+
     }
+
 };
