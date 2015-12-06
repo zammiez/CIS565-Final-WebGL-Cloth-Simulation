@@ -158,7 +158,7 @@
           selection: null,
           itrOffset: new THREE.Vector3(),
           pinObjects: [],
-          uniformPins: [0.0,0.0,0.0,0.0],
+          uniformPins: new THREE.Vector4(),//[0.0,0.0,0.0,0.0],
       };
 
       function onMouseMove(event) {
@@ -177,14 +177,14 @@
               var intersects = raycaster.intersectObject(usrControl.plane);
               // Reposition the object based on the intersection point with the plane
               usrControl.selection.position.copy(intersects[0].point.sub(usrControl.itrOffset));
-              usrControl.uniformPins[0] = usrControl.selection.position.x;
-              usrControl.uniformPins[1] = usrControl.selection.position.y;
-              usrControl.uniformPins[2] = usrControl.selection.position.z;
-              usrControl.uniformPins[3] = 1.0;
+              usrControl.uniformPins.x = usrControl.selection.position.x;
+              usrControl.uniformPins.y = usrControl.selection.position.y;
+              usrControl.uniformPins.z = usrControl.selection.position.z;
+              usrControl.uniformPins.w = 1.0;
 
           } else {
               // Update position of the plane if need
-              usrControl.uniformPins[3] = 0.0;
+              usrControl.uniformPins.w = 0.0;
               var intersects = raycaster.intersectObjects(usrControl.pinObjects);
               if (intersects.length > 0) {
                   usrControl.plane.position.copy(intersects[0].object.position);
@@ -277,6 +277,12 @@
           usrControl.testDragMesh = new THREE.Mesh(testDragGeo, testDragMat);
           usrControl.testDragMesh.position.x = 0.0;
           usrControl.testDragMesh.position.y = 1.0;
+          usrControl.testDragMesh.position.z = 0.0;
+
+          usrControl.uniformPins.x = 0.0;
+          usrControl.uniformPins.y = 1.0;
+          usrControl.uniformPins.z = 0.0;
+
           scene.add(usrControl.testDragMesh);
           usrControl.pinObjects.push(usrControl.testDragMesh);
           //
@@ -334,21 +340,74 @@
           } else {
               
               //WebGL 1+
-              //textures?? what for??
-              gpgpu = new GPGPU(renderer);
-              simulationShader = new GPGPU2.SimulationShader2();
+              //textures?? what for?? fragment shader?pin-pong texture?
+              
+              texture = new THREE.DataTexture(data, cloth_w, cloth_h, THREE.RGBAFormat, THREE.FloatType);
+              texture.minFilter = THREE.NearestFilter;
+              texture.magFilter = THREE.NearestFilter;
+              texture.needsUpdate = true;
 
-              debugger;
+              rtTexturePos = new THREE.WebGLRenderTarget(cloth_w, cloth_h, {
+                  wrapS: THREE.RepeatWrapping,
+                  wrapT: THREE.RepeatWrapping,
+                  minFilter: THREE.NearestFilter,
+                  magFilter: THREE.NearestFilter,
+                  format: THREE.RGBAFormat,
+                  type: THREE.FloatType,
+                  stencilBuffer: false
+              });
+              rtTexturePos2 = rtTexturePos.clone();
+
+              gpgpu = new GPGPU(renderer);
+              simulationShader = new GPGPU2.SimulationShader1();
+
+              vbo_pos = new THREE.Geometry();
+
+              for (var i = 0, t = 0, x = 0; x < cloth_w; x++) {
+                  for (var y = 0; y < cloth_h; y++) {
+
+                      var vertex = new THREE.Vector3();
+                      vertex.x = x * 1.0 / cloth_w;
+                      vertex.y = 1.0;
+                      vertex.z = y * 1.0 / cloth_h; //-y * 1.0 / cloth_h;
+                      vbo_pos.vertices.push(vertex);
+                      /*
+                      vtxIds[i + 0] = t;
+                      vtxIds[i + 1] = t;
+                      vtxIds[i + 2] = t;
+                      vtxIds[i + 3] = t;
+                      */
+                      i += 4;
+                      t++;
+                  }
+              }
+              material = new THREE.ShaderMaterial({
+                  uniforms: {
+                      "map": { type: "t", value: rtTexturePos },
+                      "width": { type: "f", value: cloth_w },
+                      "height": { type: "f", value: cloth_h },
+                      "pointSize": { type: "f", value: pointSize }
+                  },
+                  vertexShader: document.getElementById('vs-particles').textContent,
+                  fragmentShader: document.getElementById('fs-particles').textContent,
+                  blending: THREE.AdditiveBlending,
+                  depthWrite: false,
+                  depthTest: true,
+                  transparent: true
+              });
+
           }
 
           mesh = new THREE.PointCloud(vbo_pos, material);
           //mesh = new THREE.Points(vbo_pos, material);
-          
+          scene.add(mesh);
+
           window.addEventListener('start-simulation', onStartSimulation);
           window.addEventListener('step-simulation', onStepSimulation);
           window.addEventListener('mousemove', onMouseMove, false);
           window.addEventListener('mousedown', onMouseDown,false);
-          window.addEventListener('mouseup', onMouseUp,false);
+          window.addEventListener('mouseup', onMouseUp, false);
+
       }
       function onMouseDown(event)
       {
@@ -445,15 +504,14 @@
       function render() {
 
           requestAnimationFrame(render);
-
+          debugger;
           //*/
           if ((!cfg_ui.getPause())||guiStep) {
               simulationShader.setTimer(0.0002);
               timer += 1;
-
               // Ugly hack to make the particle mesh always draw last
               scene.remove(mesh); scene.add(mesh);
-              
+              debugger;
               if (isWebGL2) {
                   if (count % 2 === 0) {
                       gpgpu.pass(simulationShader, vbo_pos2, vbo_pos, cfg_ui, usrControl);
@@ -462,7 +520,23 @@
                       gpgpu.pass(simulationShader, vbo_pos, vbo_pos2, cfg_ui, usrControl);
                       mesh.geometry = vbo_pos;
                   }
-              };
+              } else {
+                  debugger;
+                  if (count % 2 === 0) {
+                      debugger;
+                      gpgpu.pass(simulationShader.setPositionsTexture(rtTexturePos), rtTexturePos2);
+                      debugger;
+                      material.uniforms.map.value = rtTexturePos;
+                      debugger;
+                  } else {
+                      debugger;
+                      gpgpu.pass(simulationShader.setPositionsTexture(rtTexturePos2), rtTexturePos);
+                      debugger;
+                      material.uniforms.map.value = rtTexturePos2;
+                      debugger;
+                  }
+                  debugger;
+              }
               count++;
               guiStep = !guiStep;
           }
