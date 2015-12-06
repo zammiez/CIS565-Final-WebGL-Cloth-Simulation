@@ -49,6 +49,32 @@
 
     <script src="helvetiker_bold.typeface.js"></script>
 
+    <!-- WebGL 1 shaders -->
+    <script id="vs-particles" type="x-shader/x-vertex">
+          uniform sampler2D map;
+          uniform float width;
+          uniform float height;
+          uniform float pointSize;
+          varying vec2 vUv;
+          varying vec4 vPosition;
+          void main() {
+          vUv = position.xy + vec2( 0.5 / width, 0.5 / height );
+          vec3 color = texture2D( map, vUv ).rgb;
+          gl_PointSize = pointSize;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4( color, 1.0 );
+          }
+     </script>
+
+     <script id="fs-particles" type="x-shader/x-fragment">
+          uniform sampler2D map;
+          varying vec2 vUv;
+          varying vec4 vPosition;
+          void main() {
+          float depth = smoothstep( 10.24, 1.0, gl_FragCoord.z / gl_FragCoord.w );
+          gl_FragColor = vec4( (vec3(0.0, 0.03, 0.05) + (texture2D( map, vUv ).xyz * 0.25)), depth );
+          }
+    </script>
+
     <!-- WebGL 2 shaders -->
     <script id="vs-particles-2" type="x-shader/x-vertex">
       uniform float pointSize;
@@ -146,7 +172,6 @@
           vector.unproject(camera);
           // Set the raycaster position
           raycaster.set(camera.position, vector.sub(camera.position).normalize());
-
           if (usrControl.selection) {
               // Check the position where the plane is intersected
               var intersects = raycaster.intersectObject(usrControl.plane);
@@ -237,7 +262,8 @@
           var sphereGeom = new THREE.SphereGeometry(0.3, 100, 100);
           sphereMesh = new THREE.Mesh(sphereGeom, sphereMaterial);
           sphereMesh.position.x = 0.5;
-          sphereMesh.position.z = 0.3;
+          sphereMesh.position.y = 0.45;
+          sphereMesh.position.z = 0.4;
           scene.add(sphereMesh);
 
           //Move plane
@@ -246,7 +272,7 @@
           scene.add(usrControl.plane);
 
           //https://www.script-tutorials.com/webgl-with-three-js-lesson-10/
-          var testDragGeo = new THREE.SphereGeometry(0.08, 10, 10);
+          var testDragGeo = new THREE.SphereGeometry(0.03, 10, 10);
           var testDragMat = new THREE.MeshPhongMaterial({ color: 0xEE00EE });
           usrControl.testDragMesh = new THREE.Mesh(testDragGeo, testDragMat);
           usrControl.testDragMesh.position.x = 0.0;
@@ -306,8 +332,13 @@
               gpgpu.init(data);
               simulationShader = new GPGPU2.SimulationShader2(renderer, cloth_w,cloth_h);
           } else {
-              debugger;
+              
               //WebGL 1+
+              //textures?? what for??
+              gpgpu = new GPGPU(renderer);
+              simulationShader = new GPGPU2.SimulationShader2();
+
+              debugger;
           }
 
           mesh = new THREE.PointCloud(vbo_pos, material);
@@ -349,7 +380,7 @@
           //cfg_ui.setPause(false);
           usrControl.testDragMesh.position.x = 0.0;
           usrControl.testDragMesh.position.y = 1.0;
-
+          usrControl.testDragMesh.position.z = 0.0;
           cloth_h = cfg_ui.getClothDim();
           cloth_w = cloth_h;
           var mass = cfg_ui.getParticleMass();
@@ -425,10 +456,10 @@
               
               if (isWebGL2) {
                   if (count % 2 === 0) {
-                      gpgpu.pass(simulationShader, vbo_pos2, vbo_pos, cfg_ui, usrControl.uniformPins);
+                      gpgpu.pass(simulationShader, vbo_pos2, vbo_pos, cfg_ui, usrControl);
                       mesh.geometry = vbo_pos2;
                   } else {
-                      gpgpu.pass(simulationShader, vbo_pos, vbo_pos2, cfg_ui, usrControl.uniformPins);
+                      gpgpu.pass(simulationShader, vbo_pos, vbo_pos2, cfg_ui, usrControl);
                       mesh.geometry = vbo_pos;
                   }
               };

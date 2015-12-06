@@ -14,7 +14,7 @@ var GPGPU2 = function (renderer,cloth_w,cloth_h) {
         posData = new Float32Array(data);
         prevposData = new Float32Array(data);
     }
-    this.pass = function (shader, source, target, cfg, newPinpin) {
+    this.pass = function (shader, source, target, cfg, usrCtrl) {
 
         var sourceAttrib = source.attributes['position'];
         if (target.attributes['position'].buffer && sourceAttrib.buffer) {
@@ -23,7 +23,7 @@ var GPGPU2 = function (renderer,cloth_w,cloth_h) {
             
             //gl.getBufferSubData(gl.ARRAY_BUFFER,tempData,sourceAttrib.buffer);
             
-            shader.bind(posData, prevposData, cfg, newPinpin);
+            shader.bind(posData, prevposData, cfg, usrCtrl);
             prevposData = new Float32Array(posData);
 
             gl.enableVertexAttribArray(shader.attributes.a_trytry);
@@ -59,4 +59,29 @@ var GPGPU2 = function (renderer,cloth_w,cloth_h) {
             //gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, 0);
         }
     };
+};
+
+var GPGPU = function (renderer) {
+
+    var camera = new THREE.OrthographicCamera(-0.5, 0.5, 0.5, -0.5, 0, 1);
+
+    var scene = new THREE.Scene();
+
+    var mesh = new THREE.Mesh(new THREE.PlaneBufferGeometry(1, 1));
+    scene.add(mesh);
+
+    this.render = function (_scene, _camera, target) {
+        renderer.render(_scene, _camera, target, false);
+    };
+
+    this.pass = function (shader, target) {
+        mesh.material = shader.material;
+        renderer.render(scene, camera, target, false);
+    };
+
+    this.out = function (shader) {
+        mesh.material = shader.material;
+        renderer.render(scene, camera);
+    };
+
 };

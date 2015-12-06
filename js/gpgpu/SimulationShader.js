@@ -26,10 +26,11 @@ function simulationCommon() {
         'float DAMPING = -0.0125;',
         'void sphereCollision(inout vec3 x, vec3 center, float r)',
         '{',
+        'r *= 1.01;',
 	    'vec3 delta = x - center;',
         'float dist = length(delta);',
         'if (dist < r) {',
-        '   x = center + delta*1.01*(r / dist);',
+        '   x = center + delta*(r / dist);',
         '}',
     '} ',
         'vec2 getNeighbor(int n, out float ks, out float kd)',
@@ -46,12 +47,18 @@ function simulationCommon() {
       '     if (n == 5) return vec2(-1.0, -1.0);',
       '     if (n == 6) return vec2(-1.0, 1.0);',
       '     if (n == 7) return vec2(1.0, 1.0);',
-            //bend spring (adjacent neighbors 1 node away)
+            //bend spring (adjacent neighbors 1 node away)                  //(TODO: far neighbor)
       '     if (n<12) { ks =Bnd[0]; kd = Bnd[1]; }', //ksBnd,kdBnd
       '     if (n == 8)	return vec2(2.0, 0.0);',
       '     if (n == 9) return vec2(0.0, -2.0);',
       '     if (n == 10) return vec2(-2.0, 0.0);',
       '     if (n == 11) return vec2(0.0, 2.0);',
+                  //bend spring (adjacent neighbors 1 node away)                  //(TODO: far neighbor)
+      '     if (n<16) { ks =Bnd[0]; kd = Bnd[1]; }', //ksBnd,kdBnd
+      '     if (n == 12)	return vec2(15.0, 0.0);',
+      '     if (n == 13) return vec2(0.0, -15.0);',
+      '     if (n == 14) return vec2(-15.0, 0.0);',
+      '     if (n == 15) return vec2(0.0, 15.0);',
       '     return vec2(0.0,0.0);',
       '}',
 
@@ -69,7 +76,7 @@ function simulationCommon() {
       'if(!pinBoolean) pinBoolean = (xid>=u_clothWidth-2.0)&&(yid<=1.0)&&(u_pins.y>0.0);',//Pin2
       'if(!pinBoolean) pinBoolean = (xid<=1.0)&&(yid>=u_clothWidth-2.0)&&(u_pins.z>0.0);',//Pin3
       'if(!pinBoolean) pinBoolean = (xid>=u_clothWidth-2.0)&&(yid>=u_clothWidth-2.0)&&(u_pins.w>0.0);',//Pin4
-
+      'if(pinBoolean) return pos;',
       'vec2 coord;',
       'coord = vec2(yid,u_clothWidth-1.0-xid)*(1.0/u_clothWidth);',
       'float timestep = u_timer;',
@@ -96,7 +103,6 @@ function simulationCommon() {
       '	float nxid = xid + nCoord.x;',
       '	float nyid = yid + nCoord.y;',
       '	if (nxid < 0.0 || nxid>(u_clothWidth-1.0) || nyid<0.0 || nyid>(u_clothWidth-1.0)) continue;',
-
       '	nCoord = vec2(nyid,u_clothWidth-1.0-nxid) / u_clothWidth;',
       '	vec3 posNP = texture(u_texPos, nCoord).xyz;',
       '	vec3 prevNP = texture(u_texPrevPos, nCoord).xyz;',
@@ -116,7 +122,7 @@ function simulationCommon() {
 
       'if(pinBoolean); else pos.xyz += vel*timestep;',
       //'if(pos.y<-3.0) pos.y = -3.0;',//ground
-      'sphereCollision(pos.xyz,vec3(0.5,0.0,0.3),0.3);',
+      'sphereCollision(pos.xyz,vec3(0.5,0.45,0.4),0.3);',
       //'if(pos.xyz == texPos.xyz) pos.y+=0.01;else pos.y = texPos.y+0.01;',
       //'pos.x+=0.01;',
     '  return pos;',
@@ -237,7 +243,7 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
 
     attributes: attributes,
 
-    bind: function (tempData,prevData,cfg,newPinPos) {
+    bind: function (tempData, prevData, cfg, usrCtrl) {
         //!!! VBO -> Texture ?????
         //http://stackoverflow.com/questions/17262574/packing-vertex-data-into-a-webgl-texture
         //TODO: don't need to re-create texture every frame.....put those into init
@@ -282,7 +288,7 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
         gl.uniform2f(uniforms.Bnd, cfg.getKsBend(), -cfg.getKdBend());
         
         gl.uniform4f(uniforms.u_pins, cfg.getPin1(), cfg.getPin2(), cfg.getPin3(), cfg.getPin4());
-        gl.uniform4f(uniforms.u_newPinPos, newPinPos[0],newPinPos[1],newPinPos[2],newPinPos[3]);
+        gl.uniform4f(uniforms.u_newPinPos, usrCtrl.uniformPins[0], usrCtrl.uniformPins[1], usrCtrl.uniformPins[2], usrCtrl.uniformPins[3]);
         /*
         //UBO:
         //https://www.packtpub.com/books/content/opengl-40-using-uniform-blocks-and-uniform-buffer-objects
@@ -317,4 +323,6 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
 
   }
 
+};
+GPGPU2.SimulationShader1 = function () {
 };
