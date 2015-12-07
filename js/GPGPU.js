@@ -80,6 +80,8 @@ var GPGPU = function (renderer) {
         stencilBuffer: false
     });
 
+    var prevVelTexture = velTexture.clone();
+
     /*
     this.render = function (_scene, _camera, target) {
         renderer.render(_scene, _camera, target, true);
@@ -90,15 +92,24 @@ var GPGPU = function (renderer) {
         //Initialze Velocity
         mesh.material = shader.initVelMat;
         renderer.render(scene, camera, velTexture, false);
+        renderer.render(scene, camera, prevVelTexture, false);
     };
 
     this.pass = function (shader, target) {
 
-        this.initVel(shader);
-        shader.setVelocityTexture(velTexture);
+        //this.initVel(shader);
 
+        shader.setPrevVelocityTexture( prevVelTexture);
+        mesh.material = shader.updateVelMat;
+        renderer.render(scene, camera, velTexture, false);
+
+        shader.setVelocityTexture(velTexture);
         mesh.material = shader.material;
         renderer.render(scene, camera, target, false);
+
+        var a = velTexture;
+        velTexture = prevVelTexture;
+        prevVelTexture = a;
 
         //renderer.render(scene, camera, target, false);
        

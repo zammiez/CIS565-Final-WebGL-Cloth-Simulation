@@ -542,7 +542,8 @@
             //*/
             if ((!cfg_ui.getPause()) || guiStep) {
                 simulationShader.setTimer(0.003);//TODO
-                if (count > 50 && !isWebGL2) simulationShader.setStart(0);
+
+                if (count > 20 && !isWebGL2) simulationShader.setStart(0);
 
                 timer += 1;
 
@@ -560,46 +561,16 @@
                 } else {
                     if (true) {
 
-                        var p1;
-                        var p3;
-                        var p2, p4;
-
-                        //var ttt1 = rtTexturePos;
-                        gl = renderer.getContext();
-                        if (count > -10) {
-
-                            var pixels1 = new Float32Array(4 * 50 * 50); // be careful - allocate memory only once
-                            var fbo1 = rtTexturePos.__webglFramebuffer;
-                            gl.bindFramebuffer(gl.FRAMEBUFFER, fbo1);
-                            gl.viewport(0, 0, 49, 49);
-                            gl.readPixels(0, 0, 49, 49, gl.RGBA, gl.FLOAT, pixels1);
-                            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-                            p1 = pixels1[0];
-                            debugger;
-                        }
-
                         simulationShader.setPositionsTexture(rtTexturePos);
+                        if (count < 15)
+                            gpgpu.initVel(simulationShader);
                         gpgpu.pass(simulationShader, rtTexturePos2);
-                        //if (count > 50)
-                            material.uniforms.map.value = rtTexturePos;
-                        ///*
-                        if (count > -10) {
 
-                            var pixels3 = new Float32Array(4 * 50 * 50); // be careful - allocate memory only once
-                            var fbo3 = rtTexturePos.__webglFramebuffer;
-                            gl.bindFramebuffer(gl.FRAMEBUFFER, fbo3);
-                            gl.viewport(0, 0, 49, 49);
-                            gl.readPixels(0, 0, 49, 49, gl.RGBA, gl.FLOAT, pixels3);
-                            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-                            p3 = pixels3[0];
-                            debugger;
-                        }
+                        material.uniforms.map.value = rtTexturePos;
 
                         var a = rtTexturePos;
                         rtTexturePos = rtTexturePos2;
                         rtTexturePos2 = a;
-                        //*/
-
                     }
                     else if (count % 2 === 0) {                    
                         simulationShader.setPositionsTexture(rtTexturePos);

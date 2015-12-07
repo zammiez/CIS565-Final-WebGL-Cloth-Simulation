@@ -369,6 +369,7 @@ GPGPU.SimulationShader = function () {
     var initVelMat = new THREE.ShaderMaterial({
 
         vertexShader: [
+
           'void main() {',
           '  gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
           '}',
@@ -377,8 +378,34 @@ GPGPU.SimulationShader = function () {
         fragmentShader: [
 
           'void main() {',
-          '  gl_FragColor = vec4(0.0,0.5,-0.5,1.0);',
+          '  gl_FragColor = vec4(0.0,0.2,-0.1,1.0);',
           '}',
+        ].join('\n'),
+    });
+
+    var updateVelMat = new THREE.ShaderMaterial({
+
+        uniforms: {
+            tVelocity: { type: "t", value: texture },
+        },
+
+        vertexShader: [
+            'varying vec2 vUv;',
+            'void main() {',
+            '  vUv = vec2(uv.x, 1.0 - uv.y);',
+            '  gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
+            '}',
+        ].join('\n'),
+
+        fragmentShader: [
+            'varying vec2 vUv;',
+            'uniform sampler2D tVelocity;',
+            'void main() {',
+            'vec4 vel =  texture2D( tVelocity, vUv );',
+            'vel.x+=0.01;',
+            '  gl_FragColor = vec4(vel.xyz,1.0);',
+            //'  gl_FragColor = vec4(0.2,-0.2,0.0,1.0);',
+            '}',
         ].join('\n'),
     });
 
@@ -433,6 +460,8 @@ GPGPU.SimulationShader = function () {
 
         initVelMat: initVelMat,
 
+        updateVelMat: updateVelMat,
+
         material: material,
 
         setPositionsTexture: function (positions) {           
@@ -444,7 +473,6 @@ GPGPU.SimulationShader = function () {
             material.uniforms.tVelocity.value = velocities;
             return this;
         },
-
 
         setOriginsTexture: function (origins) {
 
@@ -467,6 +495,12 @@ GPGPU.SimulationShader = function () {
             return this;
 
         },
+
+        setPrevVelocityTexture: function (velocities) {
+            updateVelMat.uniforms.tVelocity.value = velocities;
+            return this;
+        },
+
 
     }
 
