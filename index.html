@@ -494,7 +494,7 @@
                 gpgpu = new GPGPU(renderer);
                 simulationShader = new GPGPU.SimulationShader();
                 simulationShader.setOriginsTexture(texture);
-
+                /*
                 geometry = new THREE.Geometry();
 
                 for (var i = 0, l = cloth_w * cloth_h; i < l; i++) {
@@ -502,7 +502,7 @@
                     vertex.x = (i % cloth_w) / cloth_w;
                     vertex.y = Math.floor(i / cloth_w) / cloth_h;
                     geometry.vertices.push(vertex);
-                }
+                }*/
 
                 material = new THREE.ShaderMaterial({
                     uniforms: {
@@ -519,8 +519,10 @@
                     transparent: true
                 });
                 count = 0;
-                scene.remove(mesh);
-                mesh = new THREE.PointCloud(geometry, material);
+                mesh.material = material;
+                //scene.remove(mesh);
+                //scene.add(mesh);
+                //mesh = new THREE.PointCloud(geometry, material);
             }
         }
         function onStepSimulation(event) {

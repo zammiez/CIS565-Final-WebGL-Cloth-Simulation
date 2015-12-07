@@ -379,24 +379,25 @@ GPGPU.SimulationShader = function () {
             'varying vec2 vUv;',
             'uniform sampler2D tVelocity;',  
             'uniform sampler2D tPositions;',
-            'vec2 Str = vec2(50.0,-0.01);',
-            'vec2 Shr = vec2(50.0,-0.01);',
-            'vec2 Bnd = vec2(50.0,-0.01);',
+            'vec2 Str = vec2(10.0,-0.01);',
+            'vec2 Shr = vec2(10.0,-0.01);',
+            'vec2 Bnd = vec2(10.0,-0.01);',
             getNeighbor(),
             'void main() {',
             '  vec4 pos = texture2D( tPositions, vUv );',
             '   vec3 F = vec3(0.0,-9.8*0.1,0.0);',//mass
 
             '   vec4 vel =  texture2D( tVelocity, vUv );',
-                  'float ks, kd;',
+
 
 /****************
 **  SIMULATION **
 *****************/
 
-      'for (int k = 0; k < 12; k++)',
+      'for (int k = 2; k < 3; k++)',
       '{',
       ' vec3 tempVel = vel.xyz;',
+      ' float ks, kd;',
       '	vec2 nCoord = getNeighbor(k, ks, kd);',
 
       '	float inv_cloth_size = 1.0 / (50.0);',//LATER
@@ -425,7 +426,7 @@ GPGPU.SimulationShader = function () {
 /****************
 *****************/
             '   vec3 acc = F/0.1;',//mass
-            '  if(vUv.x<0.02&&vUv.y<0.1) vel.xyz = vec3(0.0);else  vel.xyz += acc*0.001;', //MARK
+            '  if(vUv.x<0.02) vel.xyz = vec3(0.0);else  vel.xyz += acc*0.003;', //MARK
             '   gl_FragColor = vec4(vel.xyz,1.0);',
             //'  gl_FragColor = vec4(0.2,-0.2,0.0,1.0);',
             '}',
@@ -470,8 +471,8 @@ GPGPU.SimulationShader = function () {
           '     pos = vec4(texture2D( origin, vUv ).xyz, 0.1);',
           '}',
           'else{',
-                'if(vUv.x<0.02&&vUv.y<0.1); else pos.xyz+=vel.xyz*0.001;',//MARK
-                'sphereCollision(pos.xyz,vec3(0.5,0.45,0.4),0.3);',
+                'if(vUv.x<0.02); else pos.xyz+=vel.xyz*0.003;',//MARK
+               // 'sphereCollision(pos.xyz,vec3(0.5,0.45,0.4),0.3);',
           '}',
 
           '  gl_FragColor = pos;',
