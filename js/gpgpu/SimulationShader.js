@@ -406,7 +406,7 @@ GPGPU.SimulationShader = function () {
 
       '	nCoord *=(1.0/50.0);',//LATER
       ' vec2 newCoord = vUv+nCoord;',
-      //' if( newCoord.x<0.01 || newCoord.x>0.985 || newCoord.y<0.01 || newCoord.y>0.985) continue;',
+      ' if( newCoord.x<0.01 || newCoord.x>0.985 || newCoord.y<0.01 || newCoord.y>0.985) continue;',
 
       '	vec3 posNP = texture2D( tPositions, newCoord).xyz;',
       //'	vec3 prevNP = texture(u_texPrevPos, nCoord).xyz;',
