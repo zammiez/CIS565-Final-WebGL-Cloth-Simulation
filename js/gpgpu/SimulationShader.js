@@ -379,10 +379,53 @@ GPGPU.SimulationShader = function () {
             'varying vec2 vUv;',
             'uniform sampler2D tVelocity;',  
             'uniform sampler2D tPositions;',
-
+            'vec2 Str = vec2(50.0,-0.01);',
+            'vec2 Shr = vec2(50.0,-0.01);',
+            'vec2 Bnd = vec2(50.0,-0.01);',
+            getNeighbor(),
             'void main() {',
+            '  vec4 pos = texture2D( tPositions, vUv );',
+            '   vec3 F = vec3(0.0,-9.8*0.1,0.0);',//mass
+
             '   vec4 vel =  texture2D( tVelocity, vUv );',
-            '   vel.y += -0.02*1.0;', //v = a*t
+                  'float ks, kd;',
+
+/****************
+**  SIMULATION **
+*****************/
+
+      'for (int k = 0; k < 12; k++)',
+      '{',
+      ' vec3 tempVel = vel.xyz;',
+      '	vec2 nCoord = getNeighbor(k, ks, kd);',
+
+      '	float inv_cloth_size = 1.0 / (50.0);',//LATER
+      '	float rest_length = length(nCoord*inv_cloth_size);',
+
+      '	nCoord *=(1.0/50.0);',//LATER
+      ' vec2 newCoord = vUv+nCoord;',
+      ' if( newCoord.x<0.01 || newCoord.x>0.99 || newCoord.y<0.01 || newCoord.y>0.99) continue;',
+
+      '	vec3 posNP = texture2D( tPositions, newCoord).xyz;',
+      //'	vec3 prevNP = texture(u_texPrevPos, nCoord).xyz;',
+
+      //'	vec3 v2 = (posNP - prevNP) / timestep;',
+      '	vec3 v2 = texture2D( tVelocity, newCoord ).xyz;',
+      '	vec3 deltaP = pos.xyz - posNP;',
+
+      'tempVel += deltaP;',
+
+      '	vec3 deltaV = tempVel - v2;',
+      '	float dist = length(deltaP);',
+      '	float   leftTerm = -ks * (dist - rest_length);',
+      '	float  rightTerm = kd * (dot(deltaV, deltaP) / dist);',
+      '	vec3 springForce = (leftTerm + rightTerm)* normalize(deltaP);',
+      '	F += springForce;',
+      '};',
+/****************
+*****************/
+            '   vec3 acc = F/0.1;',//mass
+            '  if(vUv.x<0.02&&vUv.y<0.1) vel.xyz = vec3(0.0);else  vel.xyz += acc*0.001;', //MARK
             '   gl_FragColor = vec4(vel.xyz,1.0);',
             //'  gl_FragColor = vec4(0.2,-0.2,0.0,1.0);',
             '}',
@@ -427,7 +470,7 @@ GPGPU.SimulationShader = function () {
           '     pos = vec4(texture2D( origin, vUv ).xyz, 0.1);',
           '}',
           'else{',
-                'pos.xyz+=vel.xyz;',
+                'if(vUv.x<0.02&&vUv.y<0.1); else pos.xyz+=vel.xyz*0.001;',//MARK
                 'sphereCollision(pos.xyz,vec3(0.5,0.45,0.4),0.3);',
           '}',
 
@@ -446,6 +489,7 @@ GPGPU.SimulationShader = function () {
 
         setPositionsTexture: function (positions) {           
             material.uniforms.tPositions.value = positions;
+            updateVelMat.uniforms.tPositions.value = positions;
             return this;
         },
 
