@@ -332,10 +332,11 @@ GPGPU.SimulationShader = function (maxColliders) {
 
     var material = new THREE.ShaderMaterial({
         uniforms: {
+            tPrevPos: { type: "t", value: texture },
             tPositions: { type: "t", value: texture },
             origin: { type: "t", value: texture },
             timer: { type: "f", value: 0 },
-            colliders: { type: "4fv", value: null },
+            isStart: { type: "i", value: 1 },
         },
 
         vertexShader: [
@@ -350,16 +351,26 @@ GPGPU.SimulationShader = function (maxColliders) {
         fragmentShader: [
           'varying vec2 vUv;',
 
+          'uniform sampler2D tPrevPos;',
           'uniform sampler2D tPositions;',
           'uniform sampler2D origin;',
           'uniform float timer;',
+          'uniform int isStart;',
 
           'void main() {',
           '  vec4 pos = texture2D( tPositions, vUv );',
-          '  pos.w = 0.0;',
+          '  vec4 prevpos = texture2D( tPrevPos, vUv );',
 
-          '    pos = vec4(texture2D( origin, vUv ).xyz, 0.0);',
+          'vec3 vel = pos.xyz-prevpos.xyz;',
+          //'  pos.w = 0.0;',
+          'vec3 F = vec3(0.0,9.8*0.1,0.0);',//later: mass
 
+          'if(isStart==1)',
+          '     pos = vec4(texture2D( origin, vUv ).xyz, 0.0);',
+          'else {',
+          '     vel.y-=9.8*0.01;',
+          '     pos.y+=0.01*vel.y;',
+          '};',
           '  // Write new position out',
           '  gl_FragColor = pos;',
           '}',
@@ -378,12 +389,17 @@ GPGPU.SimulationShader = function (maxColliders) {
 
         },
 
-        setOriginsTexture: function (origins) {
+        setPrevPosTexture: function (positions) {
 
-            material.uniforms.origin.value = origins;
+            material.uniforms.tPrevPos.value = positions;
 
             return this;
 
+        },
+        setOriginsTexture: function (origins) {
+
+            material.uniforms.origin.value = origins;
+            return this;
         },
 
         setTimer: function (timer) {
@@ -392,8 +408,15 @@ GPGPU.SimulationShader = function (maxColliders) {
 
             return this;
 
-        }
+        },
+        
+        setStart: function (isStart) {
 
+            material.uniforms.isStart.value = isStart;
+
+        return this;
+
+    }
     }
 
 };
