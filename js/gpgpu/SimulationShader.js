@@ -1,38 +1,8 @@
 /**
  * @author mrdoob / http://www.mrdoob.com
  */
-
-function simulationCommon() {
-    //UBO:
-    //http://www.opentk.com/node/2926
+function getNeighbor() {
     return [
-        //'layout(std140) uniform u_tryUBO{',
-        //'   vec4 uboTry1;',
-        //'   vec4 uboTry2;',
-        //'};',
-        'uniform float u_timer;',
-        'uniform float u_clothWidth;',
-        'uniform float u_clothHeight;',
-        'uniform float u_wind;',
-        //'uniform float mass;',
-        'uniform vec2 Str;',
-        'uniform vec2 Shr;',
-        'uniform vec2 Bnd;',
-        'uniform vec4 u_pins;',
-        'uniform vec4 u_newPinPos;',
-
-        'uniform sampler2D u_texPos;',
-        'uniform sampler2D u_texPrevPos;',
-        'float DAMPING = -0.0125;',
-        'void sphereCollision(inout vec3 x, vec3 center, float r)',
-        '{',
-        'r *= 1.01;',
-	    'vec3 delta = x - center;',
-        'float dist = length(delta);',
-        'if (dist < r) {',
-        '   x = center + delta*(r / dist);',
-        '}',
-    '} ',
         'vec2 getNeighbor(int n, out float ks, out float kd)',
         '{',
             //structural springs (adjacent neighbors)
@@ -61,31 +31,27 @@ function simulationCommon() {
       '     if (n == 15) return vec2(0.0, 15.0);',
       '     return vec2(0.0,0.0);',
       '}',
-
-      'vec4 runSimulation(vec4 pos,float v_id) {',
-      //'float mass = 0.5;',
-      'float xid = float( int(v_id)/int(u_clothWidth));',
-      'float yid = v_id - u_clothWidth*xid;',
-      //'if(u_newPinPos.w>=1.0 && length(pos.xyz-u_newPinPos.xyz)<0.3 ) pos.w=0.0;',
-      //'if(u_newPinPos.w>=1.0 && u_newPinPos.x == v_id ) pos.w=0.0;',
-      'bool pinBoolean = (pos.w<=0.0);',//Pin1
-      'if(!pinBoolean) {',
-      ' pinBoolean = (xid<=1.0)&&(yid<=1.0)&&(u_pins.x>0.0);',
-      ' if(u_newPinPos.w==1.0&&pinBoolean) pos.xyz = u_newPinPos.xyz;',
-      '}',
-      'if(!pinBoolean) pinBoolean = (xid>=u_clothWidth-2.0)&&(yid<=1.0)&&(u_pins.y>0.0);',//Pin2
-      'if(!pinBoolean) pinBoolean = (xid<=1.0)&&(yid>=u_clothWidth-2.0)&&(u_pins.z>0.0);',//Pin3
-      'if(!pinBoolean) pinBoolean = (xid>=u_clothWidth-2.0)&&(yid>=u_clothWidth-2.0)&&(u_pins.w>0.0);',//Pin4
-      'if(pinBoolean) return pos;',
-      'vec2 coord;',
-      'coord = vec2(yid,u_clothWidth-1.0-xid)*(1.0/u_clothWidth);',
-      'float timestep = u_timer;',
-      ' vec4 texPos = texture(u_texPos,coord);',
-      ' vec4 texPrevPos = texture(u_texPrevPos,coord);',
+    ].join('\n');
+}
+function sphereCollision()
+{
+    return [
+        'void sphereCollision(inout vec3 x, vec3 center, float r)',
+        '{',
+        '   r *= 1.01;',
+	    '   vec3 delta = x - center;',
+        '   float dist = length(delta);',
+        '   if (dist < r) {',
+        '       x = center + delta*(r / dist);',
+        '   }',
+        '} ',
+    ].join('\n');
+}
+function simLoop2() {
+    return [
+        //Main Simulation Loop
       'vec3 F = vec3(0.0);',
-      //'F.y = -9.8*mass;',
       'F.y = -9.8*pos.w;',
-      //'F.y = -0.0*pos.w;',
       ' vec3 vel = (texPos.xyz-texPrevPos.xyz)/timestep;',
       'F+=DAMPING*vel;',
       'F.x+=u_wind*0.3;',
@@ -119,16 +85,87 @@ function simulationCommon() {
 
       'vec3 acc = F/pos.w;', // acc = F/m
       'vel = vel+ acc*timestep;',//v = v0+a*t
+    ].join('\n');
+}
+function simLoop1() {
+    return [
+        'float timestep = 0.003;',
+        'vec3 vel = vec3(0.0);',
+        'vel = (pos.xyz-prevpos.xyz)/0.3;',
+        //'  pos.w = 0.0;',
+        'float mass = 0.1;//pos.w;',
+        'vec3 F = vec3(0.0,-9.8*mass,0.0);',//later: mass
+
+
+        'vec3 acc = F/mass;', // acc = F/m
+       // 'vel = vel+ acc*timestep;',//v = v0+a*t
+       //'vel.y = -0.5;',
+        //'vel.y+=F.y/mass*timer;',
+        //'if(isStart==1) vel = vec3( 0.0,-1.0,0.0);',
+
+        'pos.x += timestep*vel.x;',
+        'pos.y += timestep*vel.y;',
+        'pos.z += timestep*vel.z;',
+
+        'sphereCollision(pos.xyz,vec3(0.5,0.45,0.4),0.3);',
+    ].join('\n');
+}
+
+function simulationCommon() {
+    //UBO:
+    //http://www.opentk.com/node/2926
+    return [
+        //'layout(std140) uniform u_tryUBO{',
+        //'   vec4 uboTry1;',
+        //'   vec4 uboTry2;',
+        //'};',
+        'uniform float u_timer;',
+        'uniform float u_clothWidth;',
+        'uniform float u_clothHeight;',
+        'uniform float u_wind;',
+        //'uniform float mass;',
+        'uniform vec2 Str;',
+        'uniform vec2 Shr;',
+        'uniform vec2 Bnd;',
+        'uniform vec4 u_pins;',
+        'uniform vec4 u_newPinPos;',
+
+        'uniform sampler2D u_texPos;',
+        'uniform sampler2D u_texPrevPos;',
+        'float DAMPING = -0.0125;',
+
+        sphereCollision(),
+        getNeighbor(),
+
+      'vec4 runSimulation(vec4 pos,float v_id) {',
+
+      'float xid = float( int(v_id)/int(u_clothWidth));',
+      'float yid = v_id - u_clothWidth*xid;',
+      'bool pinBoolean = (pos.w<=0.0);',//Pin1
+      'if(!pinBoolean) {',
+      ' pinBoolean = (xid<=1.0)&&(yid<=1.0)&&(u_pins.x>0.0);',
+      ' if(u_newPinPos.w==1.0&&pinBoolean) pos.xyz = u_newPinPos.xyz;',
+      '}',
+      'if(!pinBoolean) pinBoolean = (xid>=u_clothWidth-2.0)&&(yid<=1.0)&&(u_pins.y>0.0);',//Pin2
+      'if(!pinBoolean) pinBoolean = (xid<=1.0)&&(yid>=u_clothWidth-2.0)&&(u_pins.z>0.0);',//Pin3
+      'if(!pinBoolean) pinBoolean = (xid>=u_clothWidth-2.0)&&(yid>=u_clothWidth-2.0)&&(u_pins.w>0.0);',//Pin4
+      'if(pinBoolean) return pos;',
+      'vec2 coord;',
+      'coord = vec2(yid,u_clothWidth-1.0-xid)*(1.0/u_clothWidth);',
+      'float timestep = u_timer;',
+      ' vec4 texPos = texture(u_texPos,coord);',
+      ' vec4 texPrevPos = texture(u_texPrevPos,coord);',
+
+      simLoop2(),
 
       'if(pinBoolean); else pos.xyz += vel*timestep;',
-      //'if(pos.y<-3.0) pos.y = -3.0;',//ground
       'sphereCollision(pos.xyz,vec3(0.5,0.45,0.4),0.3);',
-      //'if(pos.xyz == texPos.xyz) pos.y+=0.01;else pos.y = texPos.y+0.01;',
-      //'pos.x+=0.01;',
     '  return pos;',
       '}',
     ].join('\n');
 }
+
+
 GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
   var gl = renderer.context;
 
@@ -351,40 +388,55 @@ GPGPU.SimulationShader = function (maxColliders) {
         fragmentShader: [
           'varying vec2 vUv;',
 
-          'uniform sampler2D tPrevPos;',
           'uniform sampler2D tPositions;',
+          'uniform sampler2D tPrevPos;',
+
           'uniform sampler2D origin;',
           'uniform float timer;',
           'uniform int isStart;',
-
+          sphereCollision(),
+          //getNeighbor(),
           'void main() {',
           '  vec4 pos = texture2D( tPositions, vUv );',
           '  vec4 prevpos = texture2D( tPrevPos, vUv );',
 
-          'vec3 vel = pos.xyz-prevpos.xyz;',
-          //'  pos.w = 0.0;',
-          'vec3 F = vec3(0.0,9.8*0.1,0.0);',//later: mass
 
-          'if(isStart==1)',
-          '     pos = vec4(texture2D( origin, vUv ).xyz, 0.0);',
+          'if(isStart==1) {',
+          '     pos = vec4(texture2D( origin, vUv ).xyz, 0.1);',
+          '     prevpos = vec4(texture2D( origin, vUv ).xyz, 0.1);',
+          '}',
           'else {',
-          '     vel.y-=9.8*0.01;',
-          '     pos.y+=0.01*vel.y;',
+                //simLoop1(),
+                'pos.x+=0.01;',
           '};',
           '  // Write new position out',
           '  gl_FragColor = pos;',
           '}',
         ].join('\n'),
     });
-
+    var ss = 1;
     return {
 
         material: material,
 
         setPositionsTexture: function (positions) {
-
+            
             material.uniforms.tPositions.value = positions;
 
+            var ttt = material.uniforms.tPositions.value;
+            gl = renderer.getContext();
+            if (ss > 3) {
+                debugger;
+                var pixels = new Float32Array(4 * 50 * 50); // be careful - allocate memory only once
+                var fbo = ttt.__webglFramebuffer;
+                debugger;
+                gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+                gl.viewport(0, 0, 50, 50);
+                gl.readPixels(0, 0, 50, 50, gl.RGBA, gl.FLOAT, pixels);
+                gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+                debugger;
+            }
+            ss++;
             return this;
 
         },
@@ -392,7 +444,6 @@ GPGPU.SimulationShader = function (maxColliders) {
         setPrevPosTexture: function (positions) {
 
             material.uniforms.tPrevPos.value = positions;
-
             return this;
 
         },

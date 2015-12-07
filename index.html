@@ -109,7 +109,12 @@
             return parseInt(value, 10);
         }
 
+        var tempTex1, tempTex2;
+
         var container, canvas, gl;
+
+        var timer = 0;
+        var count = 0;
 
         var cloth_w = 50;
         var cloth_h = 50;
@@ -325,6 +330,8 @@
                 gpgpu = new GPGPU2(renderer, cloth_w, cloth_h);
                 gpgpu.init(data);
                 simulationShader = new GPGPU2.SimulationShader2(renderer, cloth_w, cloth_h);
+
+                mesh = new THREE.PointCloud(vbo_pos, material);
             } else {
 
                 //WebGL 1+
@@ -374,9 +381,10 @@
                     depthTest: true,
                     transparent: true
                 });
+                mesh = new THREE.PointCloud(geometry, material);
             }
 
-            mesh = new THREE.PointCloud(geometry, material);
+            
             //mesh = new THREE.Points(vbo_pos, material);
             scene.add(mesh);
 
@@ -401,7 +409,6 @@
                 usrControl.selection = intersects[0].object;
                 var intersects = raycaster.intersectObject(usrControl.plane);
                 usrControl.itrOffset.copy(intersects[0].point).sub(usrControl.plane.position);//???!!
-                debugger;
             }
         }
         function onMouseUp(event) {
@@ -437,29 +444,83 @@
                     t++;
                 }
             }
+            if (isWebGL2) {
+                vbo_pos = new THREE.BufferGeometry();
+                vbo_pos.addAttribute('position', new THREE.BufferAttribute(data, 4));
+                vbo_pos.addAttribute('color', new THREE.BufferAttribute(data, 4));
+                vbo_pos.addAttribute('trytry', new THREE.BufferAttribute(vtxIds, 4));
+                vbo_pos2 = vbo_pos.clone();
+                material = new THREE.ShaderMaterial({
+                    uniforms: {
+                        "pointSize": { type: "f", value: pointSize }
+                    },
+                    attributes: {
+                        "trytry": { type: "f", value: [] }
+                    },
+                    vertexShader: document.getElementById('vs-particles-2').textContent,
+                    fragmentShader: document.getElementById('fs-particles-2').textContent,
+                    blending: THREE.AdditiveBlending,
+                    depthWrite: false,
+                    depthTest: true,
+                    transparent: true
+                });
+                gpgpu = new GPGPU2(renderer, cloth_w, cloth_h);
+                gpgpu.init(data);
+                simulationShader = new GPGPU2.SimulationShader2(renderer, cloth_w, cloth_h);
+                //mesh = new THREE.PointCloud(vbo_pos, material);
+            } else {
 
-            vbo_pos = new THREE.BufferGeometry();
-            vbo_pos.addAttribute('position', new THREE.BufferAttribute(data, 4));
-            vbo_pos.addAttribute('color', new THREE.BufferAttribute(data, 4));
-            vbo_pos.addAttribute('trytry', new THREE.BufferAttribute(vtxIds, 4));
-            vbo_pos2 = vbo_pos.clone();
-            material = new THREE.ShaderMaterial({
-                uniforms: {
-                    "pointSize": { type: "f", value: pointSize }
-                },
-                attributes: {
-                    "trytry": { type: "f", value: [] }
-                },
-                vertexShader: document.getElementById('vs-particles-2').textContent,
-                fragmentShader: document.getElementById('fs-particles-2').textContent,
-                blending: THREE.AdditiveBlending,
-                depthWrite: false,
-                depthTest: true,
-                transparent: true
-            });
-            gpgpu = new GPGPU2(renderer, cloth_w, cloth_h);
-            gpgpu.init(data);
-            simulationShader = new GPGPU2.SimulationShader2(renderer, cloth_w, cloth_h);
+                //WebGL 1+
+                texture = new THREE.DataTexture(data, cloth_w, cloth_h, THREE.RGBAFormat, THREE.FloatType);
+                texture.minFilter = THREE.NearestFilter;
+                texture.magFilter = THREE.NearestFilter;
+                texture.needsUpdate = true;
+
+                // zz85 - fbo init
+
+                rtTexturePos = new THREE.WebGLRenderTarget(cloth_w, cloth_h, {
+                    wrapS: THREE.RepeatWrapping,
+                    wrapT: THREE.RepeatWrapping,
+                    minFilter: THREE.NearestFilter,
+                    magFilter: THREE.NearestFilter,
+                    format: THREE.RGBAFormat,
+                    type: THREE.FloatType,
+                    stencilBuffer: false
+                });
+
+                rtTexturePos2 = rtTexturePos.clone();
+
+                gpgpu = new GPGPU(renderer);
+                simulationShader = new GPGPU.SimulationShader();
+                simulationShader.setOriginsTexture(texture);
+
+                geometry = new THREE.Geometry();
+
+                for (var i = 0, l = cloth_w * cloth_h; i < l; i++) {
+                    var vertex = new THREE.Vector3();
+                    vertex.x = (i % cloth_w) / cloth_w;
+                    vertex.y = Math.floor(i / cloth_w) / cloth_h;
+                    geometry.vertices.push(vertex);
+                }
+
+                material = new THREE.ShaderMaterial({
+                    uniforms: {
+                        "map": { type: "t", value: rtTexturePos },
+                        "width": { type: "f", value: cloth_w },
+                        "height": { type: "f", value: cloth_h },
+                        "pointSize": { type: "f", value: pointSize }
+                    },
+                    vertexShader: document.getElementById('vs-particles').textContent,
+                    fragmentShader: document.getElementById('fs-particles').textContent,
+                    blending: THREE.AdditiveBlending,
+                    depthWrite: false,
+                    depthTest: true,
+                    transparent: true
+                });
+                count = 0;
+                scene.remove(mesh);
+                mesh = new THREE.PointCloud(geometry, material);
+            }
         }
         function onStepSimulation(event) {
             cfg_ui.setPause(true);
@@ -473,16 +534,15 @@
 
         window.addEventListener('resize', onWindowResize, false);
 
-        var timer = 0;
-        var count = 0;
         function render() {
 
             requestAnimationFrame(render);
 
             //*/
             if ((!cfg_ui.getPause()) || guiStep) {
-                simulationShader.setTimer(0.003);
-                if(count>3&&!isWebGL2) simulationShader.setStart(0);
+                simulationShader.setTimer(0.003);//TODO
+                if (count > 8 && !isWebGL2) simulationShader.setStart(0);
+
                 timer += 1;
 
                 // Ugly hack to make the particle mesh always draw last
@@ -498,13 +558,16 @@
                     }
                 } else {
                     if (count % 2 === 0) {
-                        //simulationShader.setPrevPosTexture(rtTexturePos2);
-                        gpgpu.pass(simulationShader.setPositionsTexture(rtTexturePos), rtTexturePos2);
+                        
+                        
+                        simulationShader.setPositionsTexture(rtTexturePos);
+                        gpgpu.pass(simulationShader, rtTexturePos2);
                         material.uniforms.map.value = rtTexturePos;
 
                     } else {
-                        //simulationShader.setPrevPosTexture(rtTexturePos);
-                        gpgpu.pass(simulationShader.setPositionsTexture(rtTexturePos2), rtTexturePos);
+
+                        simulationShader.setPositionsTexture(rtTexturePos2);
+                        gpgpu.pass(simulationShader, rtTexturePos);
                         material.uniforms.map.value = rtTexturePos2;
                     }
                 }
