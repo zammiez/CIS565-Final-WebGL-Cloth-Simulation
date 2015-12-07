@@ -87,29 +87,6 @@ function simLoop2() {
       'vel = vel+ acc*timestep;',//v = v0+a*t
     ].join('\n');
 }
-function simLoop1() {
-    return [
-        'float timestep = 0.003;',
-        'vec3 vel = vec3(0.0);',
-        'vel = (pos.xyz-prevpos.xyz)/0.3;',
-        //'  pos.w = 0.0;',
-        'float mass = 0.1;//pos.w;',
-        'vec3 F = vec3(0.0,-9.8*mass,0.0);',//later: mass
-
-
-        'vec3 acc = F/mass;', // acc = F/m
-       // 'vel = vel+ acc*timestep;',//v = v0+a*t
-       //'vel.y = -0.5;',
-        //'vel.y+=F.y/mass*timer;',
-        //'if(isStart==1) vel = vec3( 0.0,-1.0,0.0);',
-        'if(vUv.y>0.02){',
-        'pos.x += timestep*vel.x;',
-        'pos.y += timestep*vel.y;',
-        'pos.z += timestep*vel.z;',
-        '}',
-        'sphereCollision(pos.xyz,vec3(0.5,0.45,0.4),0.3);',
-    ].join('\n');
-}
 
 function simulationCommon() {
     //UBO:
@@ -378,7 +355,7 @@ GPGPU.SimulationShader = function () {
         fragmentShader: [
 
           'void main() {',
-          '  gl_FragColor = vec4(0.0,0.2,-0.1,1.0);',
+          '  gl_FragColor = vec4(0.0,0.0,0.0,1.0);',
           '}',
         ].join('\n'),
     });
@@ -387,6 +364,7 @@ GPGPU.SimulationShader = function () {
 
         uniforms: {
             tVelocity: { type: "t", value: texture },
+            tPositions: { type: "t", value: texture },
         },
 
         vertexShader: [
@@ -399,11 +377,13 @@ GPGPU.SimulationShader = function () {
 
         fragmentShader: [
             'varying vec2 vUv;',
-            'uniform sampler2D tVelocity;',
+            'uniform sampler2D tVelocity;',  
+            'uniform sampler2D tPositions;',
+
             'void main() {',
-            'vec4 vel =  texture2D( tVelocity, vUv );',
-            'vel.x+=0.01;',
-            '  gl_FragColor = vec4(vel.xyz,1.0);',
+            '   vec4 vel =  texture2D( tVelocity, vUv );',
+            '   vel.y += -0.98*1.0;', //v = a*t
+            '   gl_FragColor = vec4(vel.xyz,1.0);',
             //'  gl_FragColor = vec4(0.2,-0.2,0.0,1.0);',
             '}',
         ].join('\n'),
@@ -447,8 +427,8 @@ GPGPU.SimulationShader = function () {
           '     pos = vec4(texture2D( origin, vUv ).xyz, 0.1);',
           '}',
           'else{',
-                //simLoop1(),
                 'pos.xyz+=0.01*vel.xyz;',
+                'sphereCollision(pos.xyz,vec3(0.5,0.45,0.4),0.3);',
           '}',
 
           '  gl_FragColor = pos;',
