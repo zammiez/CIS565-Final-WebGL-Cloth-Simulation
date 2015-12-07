@@ -363,9 +363,9 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
 };
 
 
-GPGPU.SimulationShader = function (maxColliders) {
+GPGPU.SimulationShader = function () {
 
-    if (!maxColliders) maxColliders = 8;
+   // if (!maxColliders) maxColliders = 8;
 
     var material = new THREE.ShaderMaterial({
         uniforms: {
@@ -374,6 +374,7 @@ GPGPU.SimulationShader = function (maxColliders) {
             origin: { type: "t", value: texture },
             timer: { type: "f", value: 0 },
             isStart: { type: "i", value: 1 },
+            count: {type:"i",value:0},
         },
 
         vertexShader: [
@@ -388,28 +389,30 @@ GPGPU.SimulationShader = function (maxColliders) {
         fragmentShader: [
           'varying vec2 vUv;',
 
-          'uniform sampler2D tPositions;',
           'uniform sampler2D tPrevPos;',
+          'uniform sampler2D tPositions;',
 
           'uniform sampler2D origin;',
           'uniform float timer;',
           'uniform int isStart;',
+          'uniform int count;',
+
           sphereCollision(),
           //getNeighbor(),
           'void main() {',
           '  vec4 pos = texture2D( tPositions, vUv );',
           '  vec4 prevpos = texture2D( tPrevPos, vUv );',
 
-
+          //*
           'if(isStart==1) {',
           '     pos = vec4(texture2D( origin, vUv ).xyz, 0.1);',
           '     prevpos = vec4(texture2D( origin, vUv ).xyz, 0.1);',
           '}',
-          'else {',
-                //simLoop1(),
-                'pos.x+=0.01;',
-          '};',
-          '  // Write new position out',
+          'else{',
+                simLoop1(),
+                //'pos.x+=0.1;',
+          '}',
+
           '  gl_FragColor = pos;',
           '}',
         ].join('\n'),
@@ -423,30 +426,23 @@ GPGPU.SimulationShader = function (maxColliders) {
             
             material.uniforms.tPositions.value = positions;
 
-            var ttt = material.uniforms.tPositions.value;
+            var ttt1 = material.uniforms.tPositions.value;
             gl = renderer.getContext();
-            if (ss > 3) {
-                debugger;
-                var pixels = new Float32Array(4 * 50 * 50); // be careful - allocate memory only once
-                var fbo = ttt.__webglFramebuffer;
-                debugger;
-                gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+            if (ss > 1) {
+
+                var pixels1 = new Float32Array(4 * 50 * 50); // be careful - allocate memory only once
+                var fbo1 = ttt1.__webglFramebuffer;
+                gl.bindFramebuffer(gl.FRAMEBUFFER, fbo1);
                 gl.viewport(0, 0, 50, 50);
-                gl.readPixels(0, 0, 50, 50, gl.RGBA, gl.FLOAT, pixels);
+                gl.readPixels(0, 0, 50, 50, gl.RGBA, gl.FLOAT, pixels1);
                 gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-                debugger;
+
             }
             ss++;
             return this;
 
         },
 
-        setPrevPosTexture: function (positions) {
-
-            material.uniforms.tPrevPos.value = positions;
-            return this;
-
-        },
         setOriginsTexture: function (origins) {
 
             material.uniforms.origin.value = origins;
@@ -465,9 +461,17 @@ GPGPU.SimulationShader = function (maxColliders) {
 
             material.uniforms.isStart.value = isStart;
 
-        return this;
+            return this;
 
-    }
+        },
+
+        setCount: function (count) {
+
+            material.uniforms.count.value = count;
+            //debugger;
+            return this;
+
+        }
     }
 
 };
