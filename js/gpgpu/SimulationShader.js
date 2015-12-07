@@ -102,11 +102,11 @@ function simLoop1() {
        //'vel.y = -0.5;',
         //'vel.y+=F.y/mass*timer;',
         //'if(isStart==1) vel = vec3( 0.0,-1.0,0.0);',
-
+        'if(vUv.x>0.02&&isStart==0){',
         'pos.x += timestep*vel.x;',
         'pos.y += timestep*vel.y;',
         'pos.z += timestep*vel.z;',
-
+        '}',
         'sphereCollision(pos.xyz,vec3(0.5,0.45,0.4),0.3);',
     ].join('\n');
 }
