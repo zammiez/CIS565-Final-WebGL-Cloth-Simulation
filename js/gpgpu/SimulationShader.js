@@ -382,7 +382,7 @@ GPGPU.SimulationShader = function () {
 
             'void main() {',
             '   vec4 vel =  texture2D( tVelocity, vUv );',
-            '   vel.y += -0.98*1.0;', //v = a*t
+            '   vel.y += -0.02*1.0;', //v = a*t
             '   gl_FragColor = vec4(vel.xyz,1.0);',
             //'  gl_FragColor = vec4(0.2,-0.2,0.0,1.0);',
             '}',
@@ -427,7 +427,7 @@ GPGPU.SimulationShader = function () {
           '     pos = vec4(texture2D( origin, vUv ).xyz, 0.1);',
           '}',
           'else{',
-                'pos.xyz+=0.01*vel.xyz;',
+                'pos.xyz+=vel.xyz;',
                 'sphereCollision(pos.xyz,vec3(0.5,0.45,0.4),0.3);',
           '}',
 
