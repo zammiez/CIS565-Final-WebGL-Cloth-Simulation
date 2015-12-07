@@ -102,7 +102,7 @@ function simLoop1() {
        //'vel.y = -0.5;',
         //'vel.y+=F.y/mass*timer;',
         //'if(isStart==1) vel = vec3( 0.0,-1.0,0.0);',
-        'if(vUv.x>0.02&&isStart==0){',
+        'if(vUv.y>0.02){',
         'pos.x += timestep*vel.x;',
         'pos.y += timestep*vel.y;',
         'pos.z += timestep*vel.z;',
@@ -366,15 +366,29 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
 GPGPU.SimulationShader = function () {
 
    // if (!maxColliders) maxColliders = 8;
+    var initVelMat = new THREE.ShaderMaterial({
+
+        vertexShader: [
+          'void main() {',
+          '  gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
+          '}',
+        ].join('\n'),
+
+        fragmentShader: [
+
+          'void main() {',
+          '  gl_FragColor = vec4(0.0,0.5,-0.5,1.0);',
+          '}',
+        ].join('\n'),
+    });
 
     var material = new THREE.ShaderMaterial({
         uniforms: {
-            tPrevPos: { type: "t", value: texture },
+            tVelocity: { type: "t", value: texture },
             tPositions: { type: "t", value: texture },
             origin: { type: "t", value: texture },
             timer: { type: "f", value: 0 },
             isStart: { type: "i", value: 1 },
-            count: {type:"i",value:0},
         },
 
         vertexShader: [
@@ -389,28 +403,25 @@ GPGPU.SimulationShader = function () {
         fragmentShader: [
           'varying vec2 vUv;',
 
-          'uniform sampler2D tPrevPos;',
+          'uniform sampler2D tVelocity;',
           'uniform sampler2D tPositions;',
 
           'uniform sampler2D origin;',
           'uniform float timer;',
           'uniform int isStart;',
-          'uniform int count;',
 
           sphereCollision(),
           //getNeighbor(),
           'void main() {',
           '  vec4 pos = texture2D( tPositions, vUv );',
-          '  vec4 prevpos = texture2D( tPrevPos, vUv );',
-
+          '  vec4 vel = texture2D( tVelocity, vUv );',
           //*
           'if(isStart==1) {',
           '     pos = vec4(texture2D( origin, vUv ).xyz, 0.1);',
-          '     prevpos = vec4(texture2D( origin, vUv ).xyz, 0.1);',
           '}',
           'else{',
-                simLoop1(),
-                //'pos.x+=0.1;',
+                //simLoop1(),
+                'pos.xyz+=0.01*vel.xyz;',
           '}',
 
           '  gl_FragColor = pos;',
@@ -420,28 +431,20 @@ GPGPU.SimulationShader = function () {
     var ss = 1;
     return {
 
+        initVelMat: initVelMat,
+
         material: material,
 
-        setPositionsTexture: function (positions) {
-            
+        setPositionsTexture: function (positions) {           
             material.uniforms.tPositions.value = positions;
-
-            var ttt1 = material.uniforms.tPositions.value;
-            gl = renderer.getContext();
-            if (ss > 1) {
-
-                var pixels1 = new Float32Array(4 * 50 * 50); // be careful - allocate memory only once
-                var fbo1 = ttt1.__webglFramebuffer;
-                gl.bindFramebuffer(gl.FRAMEBUFFER, fbo1);
-                gl.viewport(0, 0, 50, 50);
-                gl.readPixels(0, 0, 50, 50, gl.RGBA, gl.FLOAT, pixels1);
-                gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-            }
-            ss++;
             return this;
-
         },
+
+        setVelocityTexture: function (velocities) {
+            material.uniforms.tVelocity.value = velocities;
+            return this;
+        },
+
 
         setOriginsTexture: function (origins) {
 
@@ -465,13 +468,6 @@ GPGPU.SimulationShader = function () {
 
         },
 
-        setCount: function (count) {
-
-            material.uniforms.count.value = count;
-            //debugger;
-            return this;
-
-        }
     }
 
 };

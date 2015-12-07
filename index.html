@@ -286,16 +286,16 @@
             // Start Creation of DataTexture
             cloth_h = 50;
             cloth_w = cloth_h;
-            //*
-            //data = new Float32Array(cloth_w * cloth_h * 4);
+            
+            data = new Float32Array(cloth_w * cloth_h * 4);
             vtxIds = new Float32Array(cloth_w * cloth_h * 4);
             for (var i = 0, t = 0, x = 0; x <cloth_w; x++) {
                 for (var y = 0; y < cloth_h; y++) {
-                    /* data[i + 0] = x * 1.0 / cloth_w;
+                     data[i + 0] = x * 1.0 / cloth_w;
                     data[i + 1] = 1.0;
                     data[i + 2] = y * 1.0 / cloth_h; //-y * 1.0 / cloth_h;
                     data[i + 3] = 0.1;
-                    */
+                    
                     vtxIds[i + 0] = t;
                     vtxIds[i + 1] = t;
                     vtxIds[i + 2] = t;
@@ -304,17 +304,6 @@
                     i += 4;
                     t++;
                 }
-            }//*/
-
-            var boxGeo = new THREE.BoxGeometry(1, 1, 1);
-            points = THREE.GeometryUtils.randomPointsInGeometry(boxGeo, cloth_w * cloth_h);
-
-            data = new Float32Array(cloth_w * cloth_h * 4);
-            for (var i = 0, j = 0, l = data.length; i < l; i += 4, j += 1) {
-                data[i] = points[j].x;
-                data[i + 1] = points[j].y;
-                data[i + 2] = points[j].z;
-                data[i + 3] = 0.0;
             }
 
             if (isWebGL2) {
@@ -587,13 +576,6 @@
                             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
                             p1 = pixels1[0];
                             debugger;
-                        }
-                         
-                        if (count % 2 === 0) {
-                            simulationShader.setCount(2);
-                        }
-                        else {
-                            simulationShader.setCount(1);
                         }
 
                         simulationShader.setPositionsTexture(rtTexturePos);

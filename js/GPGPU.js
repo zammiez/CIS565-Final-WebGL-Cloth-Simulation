@@ -69,15 +69,39 @@ var GPGPU = function (renderer) {
 
     var mesh = new THREE.Mesh(new THREE.PlaneBufferGeometry(1, 1));
     scene.add(mesh);
+
+    var velTexture = new THREE.WebGLRenderTarget(cloth_w, cloth_h, {
+        wrapS: THREE.RepeatWrapping,
+        wrapT: THREE.RepeatWrapping,
+        minFilter: THREE.NearestFilter,
+        magFilter: THREE.NearestFilter,
+        format: THREE.RGBAFormat,
+        type: THREE.FloatType,
+        stencilBuffer: false
+    });
+
     /*
     this.render = function (_scene, _camera, target) {
         renderer.render(_scene, _camera, target, true);
     };
     */
+
+    this.initVel = function (shader) {
+        //Initialze Velocity
+        mesh.material = shader.initVelMat;
+        renderer.render(scene, camera, velTexture, false);
+    };
+
     this.pass = function (shader, target) {
+
+        this.initVel(shader);
+        shader.setVelocityTexture(velTexture);
 
         mesh.material = shader.material;
         renderer.render(scene, camera, target, false);
+
+        //renderer.render(scene, camera, target, false);
+       
     };
     /*
     this.out = function (shader) {
