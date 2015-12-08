@@ -379,9 +379,9 @@ GPGPU.SimulationShader = function () {
             'varying vec2 vUv;',
             'uniform sampler2D tVelocity;',  
             'uniform sampler2D tPositions;',
-            'vec2 Str = vec2(100.0,-0.01);',
-            'vec2 Shr = vec2(10.0,-0.01);',
-            'vec2 Bnd = vec2(10.0,-0.01);',
+            'vec2 Str = vec2(100.0,-0.25);',
+            'vec2 Shr = vec2(100.0,-0.25);',
+            'vec2 Bnd = vec2(100.0,-0.25);',
             'float DAMPING = -0.8;',
             getNeighbor(),
             'void main() {',
@@ -406,7 +406,7 @@ GPGPU.SimulationShader = function () {
 
       '	nCoord *=(1.0/50.0);',//LATER
       ' vec2 newCoord = vUv+nCoord;',
-      ' if( newCoord.x<0.01 || newCoord.x>0.985 || newCoord.y<0.01 || newCoord.y>0.985) continue;',
+      ' if( newCoord.x<0.01 || newCoord.x>0.99 || newCoord.y<0.01 || newCoord.y>0.99) continue;',
 
       '	vec3 posNP = texture2D( tPositions, newCoord).xyz;',
       //'	vec3 prevNP = texture(u_texPrevPos, nCoord).xyz;',
@@ -427,7 +427,7 @@ GPGPU.SimulationShader = function () {
 /****************
 *****************/
             '   vec3 acc = F/0.1;',//mass
-            '  if(vUv.y<0.3&&vUv.x<0.1) vel.xyz = vec3(0.0);else  vel.xyz += acc*0.003;', //MARK
+            '  if(vUv.y<0.2||vUv.y>0.8&&vUv.x<0.1) vel.xyz = vec3(0.0);else  vel.xyz += acc*0.003;', //MARK
             '   gl_FragColor = vec4(vel.xyz,1.0);',
             //'  gl_FragColor = vec4(0.2,-0.2,0.0,1.0);',
             '}',
@@ -472,8 +472,8 @@ GPGPU.SimulationShader = function () {
           '     pos = vec4(texture2D( origin, vUv ).xyz, 0.1);',
           '}',
           'else{',
-                'if(vUv.y<0.3&&vUv.x<0.1); else pos.xyz+=vel.xyz*0.003;',//MARK
-               // 'sphereCollision(pos.xyz,vec3(0.5,0.45,0.4),0.3);',
+                'if(vUv.y<0.2||vUv.y>0.8&&vUv.x<0.1); else pos.xyz+=vel.xyz*0.003;',//MARK
+                'sphereCollision(pos.xyz,vec3(0.5,0.45,0.4),0.3);',
           '}',
 
           '  gl_FragColor = pos;',
