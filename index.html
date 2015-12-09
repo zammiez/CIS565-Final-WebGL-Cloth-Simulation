@@ -221,7 +221,7 @@
 
             scene = new THREE.Scene();
 
-            camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1024);
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1024);
             camera.position.y = 1.5;
             camera.position.z = 4;
             camera.lookAt(scene.position);
@@ -255,6 +255,40 @@
             roomMesh = new THREE.Mesh(roomGeometry, roomMaterial);
             roomMesh.doubleSided = true;
             scene.add(roomMesh);
+
+
+            // prepare text geometry
+           
+            var textGeometry = new THREE.TextGeometry(isWebGL2 ? "WebGL 2 Cloth Simulation" : "WebGL Cloth Simulation", {
+                size: 0.4, // Font size
+                height: 0.05, // Font height (depth)
+                font: 'helvetiker', // Font family
+                weight: 'bold', // Font weight
+                style: 'normal', // Font style
+                curveSegments: 5, // Amount of curve segments
+                bevelThickness: 0.02, // Bevel thickness
+                bevelSize: 0.02, // Bevel size
+                bevelEnabled: true, // Enable/Disable the bevel
+                material: 0, // Main material
+                extrudeMaterial: 1 // Side (extrude) material
+            });
+
+        var materialFront = new THREE.MeshPhongMaterial({ map: texture, color: 0xffff00, emissive: 0x888888 });
+        
+        var materialSide = new THREE.MeshPhongMaterial({ map: texture, color: 0xff00ff, emissive: 0x444444 });
+    
+        var textMaterial = new THREE.MeshFaceMaterial([ materialFront, materialSide ]);
+
+        var textMesh = new THREE.Mesh(textGeometry, textMaterial);
+
+        textMesh.castShadow = true;
+
+        textMesh.position.set(-3.4,1.6,-2.6);
+        //textMesh.rotation.x = -0.3;
+
+        scene.add(textMesh);
+
+
             var sphereMaterial = new THREE.MeshLambertMaterial({ color: 0x00008B });
             var sphereGeom = new THREE.SphereGeometry(0.3, 100, 100);
             //sphereMesh = new THREE.Mesh(sphereGeom, sphereMaterial);
