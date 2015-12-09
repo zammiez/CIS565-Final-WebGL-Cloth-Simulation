@@ -141,8 +141,9 @@ function simulationCommon() {
       '}',
     ].join('\n');
 }
-
-
+function pinCondition() {
+    return ['(vUv.y <0.02||vUv.y>0.98) && vUv.x<0.02'].join('');
+}
 GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
   var gl = renderer.context;
 
@@ -163,33 +164,22 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
 
     gl.shaderSource(vertexShader, [
        '#version 300 es',
-       // '#extension GL_ARB_explicit_attrib_location : require',
-       // '#extension GL_ARB_explicit_uniform_location : require',
         'precision ' + renderer.getPrecision() + ' float;',
-        //'precision highp float;',
-        //'precision mediump float;',
-      'in vec4 a_position;',
-      'in vec4 a_trytry;',
-
-      'out vec4 v_prevpos;',
-      simulationCommon(),
-
-      'void main() {',
-      '  vec4 pos = a_position;',
-      //'float vid = pos.w;',
-      '  v_prevpos = pos;',
-      //' pos = runSimulation(pos,vid);',
-      ' pos = runSimulation(pos,a_trytry.x);',
-     '  // Write new position out',
-     '  gl_Position =vec4(pos.xyz,pos.w);',
+        'in vec4 a_position;',
+        'in vec4 a_trytry;',
+        'out vec4 v_prevpos;',
+        simulationCommon(),
+        'void main() {',
+        '  vec4 pos = a_position;',
+        '  v_prevpos = pos;',
+        ' pos = runSimulation(pos,a_trytry.x);',
+        '  gl_Position =vec4(pos.xyz,pos.w);',
       '}'
     ].join('\n'));
 
     gl.shaderSource(fragmentShader, [
       '#version 300 es',
       'precision ' + renderer.getPrecision() + ' float;',
-      //'precision highp float;',
-      //'precision mediump float;',
       'in vec4 v_prevpos;',
       'void main() {',
         //'gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);',??????
@@ -365,12 +355,16 @@ GPGPU.SimulationShader = function () {
         uniforms: {
             tVelocity: { type: "t", value: texture },
             tPositions: { type: "t", value: texture },
+            timestep: { type: "f", value: 0.003 },
+            Str: { type: "v2", value: new THREE.Vector2(850.0, -0.25) },
+            Shr: { type: "v2", value: new THREE.Vector2(850.0, -0.25) },
+            Bnd: { type: "v2", value: new THREE.Vector2(2550.0, -0.25) },
         },
 
         vertexShader: [
             'varying vec2 vUv;',
             'void main() {',
-            '  vUv = uv.xy;//vec2(uv.x, 1.0 - uv.y);',
+            '  vUv = uv.xy;',
             '  gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
             '}',
         ].join('\n'),
@@ -379,10 +373,11 @@ GPGPU.SimulationShader = function () {
             'varying vec2 vUv;',
             'uniform sampler2D tVelocity;',  
             'uniform sampler2D tPositions;',
-            'vec2 Str = vec2(100.0,-0.25);',
-            'vec2 Shr = vec2(100.0,-0.25);',
-            'vec2 Bnd = vec2(100.0,-0.25);',
-            'float DAMPING = -0.8;',
+            'uniform float timestep;',
+            'uniform vec2 Str ;',
+            'uniform vec2 Shr ;',
+            'uniform vec2 Bnd ;',
+            'float DAMPING = -0.0125;',
             getNeighbor(),
             'void main() {',
             '  vec4 pos = texture2D( tPositions, vUv );',
@@ -406,7 +401,7 @@ GPGPU.SimulationShader = function () {
 
       '	nCoord *=(1.0/50.0);',//LATER
       ' vec2 newCoord = vUv+nCoord;',
-      ' if( newCoord.x<0.01 || newCoord.x>0.99 || newCoord.y<0.01 || newCoord.y>0.99) continue;',
+      ' if( newCoord.x<0.0 || newCoord.x>0.99 || newCoord.y<0.0 || newCoord.y>0.99) continue;',
 
       '	vec3 posNP = texture2D( tPositions, newCoord).xyz;',
       //'	vec3 prevNP = texture(u_texPrevPos, nCoord).xyz;',
@@ -427,7 +422,7 @@ GPGPU.SimulationShader = function () {
 /****************
 *****************/
             '   vec3 acc = F/0.1;',//mass
-            '  if(vUv.y<0.2||vUv.y>0.8&&vUv.x<0.1) vel.xyz = vec3(0.0);else  vel.xyz += acc*0.003;', //MARK
+            'if('+pinCondition()+') vel.xyz = vec3(0.0);else  vel.xyz += acc*timestep;', //MARK
             '   gl_FragColor = vec4(vel.xyz,1.0);',
             //'  gl_FragColor = vec4(0.2,-0.2,0.0,1.0);',
             '}',
@@ -439,7 +434,7 @@ GPGPU.SimulationShader = function () {
             tVelocity: { type: "t", value: texture },
             tPositions: { type: "t", value: texture },
             origin: { type: "t", value: texture },
-            timer: { type: "f", value: 0 },
+            timer: { type: "f", value: 0.003 },
             isStart: { type: "i", value: 1 },
         },
 
@@ -447,7 +442,7 @@ GPGPU.SimulationShader = function () {
           'varying vec2 vUv;',
 
           'void main() {',
-          '  vUv = uv.xy;//vec2(uv.x, 1.0 - uv.y);',
+          '  vUv = uv.xy;',
           '  gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
           '}',
         ].join('\n'),
@@ -472,7 +467,7 @@ GPGPU.SimulationShader = function () {
           '     pos = vec4(texture2D( origin, vUv ).xyz, 0.1);',
           '}',
           'else{',
-                'if(vUv.y<0.2||vUv.y>0.8&&vUv.x<0.1); else pos.xyz+=vel.xyz*0.003;',//MARK
+                'if('+pinCondition()+') ; else pos.xyz+=vel.xyz*timer;',//MARK
                 'sphereCollision(pos.xyz,vec3(0.5,0.45,0.4),0.3);',
           '}',
 
