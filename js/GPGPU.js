@@ -95,27 +95,13 @@ var GPGPU = function (renderer) {
         renderer.render(scene, camera, prevVelTexture, false);
     };
 
-    this.pass = function (shader, target) {
+    this.pass = function (shader, target,cfg, usrCtrl) {
 
         //this.initVel(shader);
+        shader.setCfgSettings(cfg);
         shader.setPrevVelocityTexture( prevVelTexture);
         mesh.material = shader.updateVelMat;
         renderer.render(scene, camera, velTexture, false);
-
-        var p1 = new Float32Array(3);;
-        gl = renderer.getContext();
-        if (true) {
-            var pixels1 = new Float32Array(4 * 50 * 50); // be careful - allocate memory only once
-            var fbo1 = velTexture.__webglFramebuffer;
-            gl.bindFramebuffer(gl.FRAMEBUFFER, fbo1);
-            gl.viewport(0, 0, 50, 50);
-            gl.readPixels(0, 0, 50, 50, gl.RGBA, gl.FLOAT, pixels1);
-            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-            p1[0] = pixels1[0];
-            p1[1] = pixels1[1];
-            p1[2] = pixels1[2];
-            debugger;
-        }
 
         shader.setVelocityTexture(velTexture);
         mesh.material = shader.material;

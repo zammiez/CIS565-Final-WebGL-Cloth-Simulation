@@ -1,6 +1,17 @@
 /**
  * @author mrdoob / http://www.mrdoob.com
  */
+
+
+/**********************
+**  Common Features  **
+**********************/
+function addWind() {
+    return [
+        'F.x+=u_wind*0.3;',
+        'F.z+=u_wind*0.7;',
+    ].join('\n');
+}
 function getNeighbor() {
     return [
         'vec2 getNeighbor(int n, out float ks, out float kd)',
@@ -47,6 +58,11 @@ function sphereCollision()
         '} ',
     ].join('\n');
 }
+
+
+/**********************
+**      WebGL2       **
+**********************/
 function simLoop2() {
     return [
         //Main Simulation Loop
@@ -54,9 +70,7 @@ function simLoop2() {
       'F.y = -9.8*pos.w;',
       ' vec3 vel = (texPos.xyz-texPrevPos.xyz)/timestep;',
       'F+=DAMPING*vel;',
-      'F.x+=u_wind*0.3;',
-      'F.z+=u_wind*0.7;',
-
+      addWind(),
       'float ks, kd;',
 
       'for (int k = 0; k < 12; k++)',
@@ -87,7 +101,6 @@ function simLoop2() {
       'vel = vel+ acc*timestep;',//v = v0+a*t
     ].join('\n');
 }
-
 function simulationCommon() {
     //UBO:
     //http://www.opentk.com/node/2926
@@ -140,9 +153,6 @@ function simulationCommon() {
     '  return pos;',
       '}',
     ].join('\n');
-}
-function pinCondition() {
-    return ['(vUv.y <0.02||vUv.y>0.98) && vUv.x<0.02'].join('');
 }
 GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
   var gl = renderer.context;
@@ -329,6 +339,16 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
 
 };
 
+/**********************
+**      WebGL1       **
+**********************/
+
+function pinCondition() {
+    return ['(vUv.y <(2.0/cloth_w)||vUv.y>(1.0-2.0/cloth_w)) && vUv.x<(2.0/cloth_w)'].join('');
+}
+function boarderCondition() {
+    return ['newCoord.x<=0.0 || newCoord.x>=1.0 || newCoord.y<=0.0 || newCoord.y>=1.0'].join('');
+}
 
 GPGPU.SimulationShader = function () {
 
@@ -353,9 +373,11 @@ GPGPU.SimulationShader = function () {
     var updateVelMat = new THREE.ShaderMaterial({
 
         uniforms: {
+            cloth_w: { type: "f", value: 50.0 },
             tVelocity: { type: "t", value: texture },
             tPositions: { type: "t", value: texture },
             timestep: { type: "f", value: 0.003 },
+            u_wind: { type: "f", value: 0.0 },
             Str: { type: "v2", value: new THREE.Vector2(850.0, -0.25) },
             Shr: { type: "v2", value: new THREE.Vector2(850.0, -0.25) },
             Bnd: { type: "v2", value: new THREE.Vector2(2550.0, -0.25) },
@@ -371,18 +393,20 @@ GPGPU.SimulationShader = function () {
 
         fragmentShader: [
             'varying vec2 vUv;',
+            'uniform float cloth_w;',
             'uniform sampler2D tVelocity;',  
             'uniform sampler2D tPositions;',
             'uniform float timestep;',
             'uniform vec2 Str ;',
             'uniform vec2 Shr ;',
             'uniform vec2 Bnd ;',
+            'uniform float u_wind;',
             'float DAMPING = -0.0125;',
             getNeighbor(),
             'void main() {',
             '  vec4 pos = texture2D( tPositions, vUv );',
             '   vec3 F = vec3(0.0,-9.8*0.1,0.0);',//mass
-
+            addWind(),
             '   vec4 vel =  texture2D( tVelocity, vUv );',
             'F+=DAMPING*vel.xyz;',
 
@@ -396,12 +420,12 @@ GPGPU.SimulationShader = function () {
       ' float ks, kd;',
       '	vec2 nCoord = getNeighbor(k, ks, kd);',
 
-      '	float inv_cloth_size = 1.0 / (50.0);',//LATER
+      '	float inv_cloth_size = 1.0 / cloth_w;',//LATER
       '	float rest_length = length(nCoord*inv_cloth_size);',
 
-      '	nCoord *=(1.0/50.0);',//LATER
+      '	nCoord *=(1.0/cloth_w);',//LATER
       ' vec2 newCoord = vUv+nCoord;',
-      ' if( newCoord.x<0.0 || newCoord.x>0.99 || newCoord.y<0.0 || newCoord.y>0.99) continue;',
+      ' if( '+ boarderCondition() +') continue;',
 
       '	vec3 posNP = texture2D( tPositions, newCoord).xyz;',
       //'	vec3 prevNP = texture(u_texPrevPos, nCoord).xyz;',
@@ -431,6 +455,7 @@ GPGPU.SimulationShader = function () {
 
     var material = new THREE.ShaderMaterial({
         uniforms: {
+            cloth_w: { type: "f", value: 50.0 },
             tVelocity: { type: "t", value: texture },
             tPositions: { type: "t", value: texture },
             origin: { type: "t", value: texture },
@@ -450,6 +475,8 @@ GPGPU.SimulationShader = function () {
         fragmentShader: [
           'varying vec2 vUv;',
 
+          'uniform float cloth_w;',
+
           'uniform sampler2D tVelocity;',
           'uniform sampler2D tPositions;',
 
@@ -468,7 +495,7 @@ GPGPU.SimulationShader = function () {
           '}',
           'else{',
                 'if('+pinCondition()+') ; else pos.xyz+=vel.xyz*timer;',//MARK
-                'sphereCollision(pos.xyz,vec3(0.5,0.45,0.4),0.3);',
+                //'sphereCollision(pos.xyz,vec3(0.5,0.45,0.4),0.3);',
           '}',
 
           '  gl_FragColor = pos;',
@@ -483,6 +510,14 @@ GPGPU.SimulationShader = function () {
         updateVelMat: updateVelMat,
 
         material: material,
+
+        setCfgSettings: function (cfg) {
+            updateVelMat.uniforms.timestep.value = cfg.getTimeStep();
+            updateVelMat.uniforms.Str.value = new THREE.Vector2(cfg.getKsString(), -cfg.getKdString());
+            updateVelMat.uniforms.Shr.value = new THREE.Vector2(cfg.getKsShear(), -cfg.getKdShear());
+            updateVelMat.uniforms.Bnd.value = new THREE.Vector2(cfg.getKsBend(), -cfg.getKdBend());
+            updateVelMat.uniforms.u_wind.value = cfg.getWindForce();
+        },
 
         setPositionsTexture: function (positions) {           
             material.uniforms.tPositions.value = positions;
@@ -508,7 +543,16 @@ GPGPU.SimulationShader = function () {
             return this;
 
         },
-        
+
+        setClothDim: function (clothDim) {
+
+            updateVelMat.uniforms.cloth_w.value = clothDim;
+            material.uniforms.cloth_w.value = clothDim;
+
+            return this;
+
+        },
+
         setStart: function (isStart) {
 
             material.uniforms.isStart.value = isStart;

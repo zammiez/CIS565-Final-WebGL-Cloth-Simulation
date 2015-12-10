@@ -32,7 +32,7 @@
 </head>
 <body>
     <script src="lib/dat.gui.js"></script>
-
+    <script src="js/ui.js"></script>
     <script src="js/three.js"></script>
     <script src="js/GPGPU.js"></script>
     <script src="js/GeometryUtils.js"></script>
@@ -41,7 +41,7 @@
     <script src="js/leap-0.6.4.min.js"></script>
     <script src="js/leap-plugins-0.1.6.1.js"></script>
     <script src="js/leap.rigged-hand-0.1.3.min.js"></script>
-    <script src="js/ui.js"></script>
+    
     <script src="helvetiker_bold.typeface.js"></script>
     <!-- WebGL 1 shaders -->
     <script id="vs-particles" type="x-shader/x-vertex">
@@ -528,7 +528,8 @@
                 gpgpu = new GPGPU(renderer);
                 simulationShader = new GPGPU.SimulationShader();
                 simulationShader.setOriginsTexture(texture);
-                /*
+                simulationShader.setClothDim(cloth_w);
+                //*
                 geometry = new THREE.Geometry();
 
                 for (var i = 0, l = cloth_w * cloth_h; i < l; i++) {
@@ -536,7 +537,7 @@
                     vertex.x = (i % cloth_w) / cloth_w;
                     vertex.y = Math.floor(i / cloth_w) / cloth_h;
                     geometry.vertices.push(vertex);
-                }*/
+                }//*/
 
                 material = new THREE.ShaderMaterial({
                     uniforms: {
@@ -553,10 +554,10 @@
                     transparent: true
                 });
                 count = 0;
-                mesh.material = material;
-                //scene.remove(mesh);
+                //mesh.material = material;
+                scene.remove(mesh);
                 //scene.add(mesh);
-                //mesh = new THREE.PointCloud(geometry, material);
+                mesh = new THREE.PointCloud(geometry, material);
             }
         }
         function onStepSimulation(event) {
@@ -595,44 +596,14 @@
                         mesh.geometry = vbo_pos;
                     }
                 } else {
-                    if (true) {
-
-                        simulationShader.setPositionsTexture(rtTexturePos);
-                        if (count < 15)
-                            gpgpu.initVel(simulationShader);
-                        gpgpu.pass(simulationShader, rtTexturePos2);
-
-                        material.uniforms.map.value = rtTexturePos;
-
-                        var p1 = new Float32Array(3);;
-                        gl = renderer.getContext();
-                        if (true) {
-                            var pixels1 = new Float32Array(4 * 50 * 50); // be careful - allocate memory only once
-                            var fbo1 = rtTexturePos.__webglFramebuffer;
-                            gl.bindFramebuffer(gl.FRAMEBUFFER, fbo1);
-                            gl.viewport(0, 0, 50, 50);
-                            gl.readPixels(0, 0, 50, 50, gl.RGBA, gl.FLOAT, pixels1);
-                            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-                            p1[0] = pixels1[0];
-                            p1[1] = pixels1[1];
-                            p1[2] = pixels1[2];
-                            debugger;
-                        }
-
-                        var a = rtTexturePos;
-                        rtTexturePos = rtTexturePos2;
-                        rtTexturePos2 = a;
-                    }
-                    else if (count % 2 === 0) {                    
-                        simulationShader.setPositionsTexture(rtTexturePos);
-                        gpgpu.pass(simulationShader, rtTexturePos2);
-                        material.uniforms.map.value = rtTexturePos;
-
-                    } else {
-                        simulationShader.setPositionsTexture(rtTexturePos2);
-                        gpgpu.pass(simulationShader, rtTexturePos);
-                        material.uniforms.map.value = rtTexturePos2;
-                    }
+                    simulationShader.setPositionsTexture(rtTexturePos);
+                    if (count < 15)
+                        gpgpu.initVel(simulationShader);
+                    gpgpu.pass(simulationShader, rtTexturePos2, cfg_ui, usrControl);
+                    material.uniforms.map.value = rtTexturePos;
+                    var a = rtTexturePos;
+                    rtTexturePos = rtTexturePos2;
+                    rtTexturePos2 = a;
                 }
                 count++;
                 guiStep = !guiStep;
