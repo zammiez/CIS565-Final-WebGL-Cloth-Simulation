@@ -296,6 +296,7 @@
             sphereMesh.position.x = 0.5;
             sphereMesh.position.y = 0.45;
             sphereMesh.position.z = 0.4;
+            sphereMesh.visible = false;
             scene.add(sphereMesh);
 
             //Move plane
@@ -576,9 +577,11 @@
 
             requestAnimationFrame(render);
 
+            sphereMesh.visible = (cfg_ui.getRigid() == 0);
+
             //*/
             if ((!cfg_ui.getPause()) || guiStep) {
-                simulationShader.setTimer(0.003);//TODO
+                simulationShader.setTimer(cfg_ui.getTimeStep());
 
                 if (count > 20 && !isWebGL2) simulationShader.setStart(0);
 

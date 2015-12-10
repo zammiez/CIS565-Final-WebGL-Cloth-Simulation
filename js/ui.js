@@ -15,6 +15,7 @@ var UI_cfg = function () {
 
         "pause": false,
 
+        "Rigidbody":-1,
         "Wind": false,
         "Wind Force": 0.5,
         "pin 1": true,
@@ -33,6 +34,9 @@ var UI_cfg = function () {
         window.dispatchEvent(stepEvent);
     }
 
+    this.getRigid = function () {
+        return controls['Rigidbody'];
+    };
 
     this.getClothDim = function () {
         return controls['Cloth Dimension'];
@@ -120,13 +124,20 @@ var UI_cfg = function () {
 
        
         var Interaction_Folder = controls.gui.addFolder('Interaction_Folder');
-        Interaction_Folder.add(controls,"Wind");
+        Interaction_Folder.add(controls, "Rigidbody", {
+            'None':     -1,
+            'Sphere':    0,
+        })
+        Interaction_Folder.add(controls, "Wind");
         Interaction_Folder.add(controls, "Wind Force");
         var PinFolder  = Interaction_Folder.addFolder('Pins');
         PinFolder.add(controls, "pin 1");
         PinFolder.add(controls, "pin 2");
         PinFolder.add(controls, "pin 3");
         PinFolder.add(controls, "pin 4");
+
+        //Interaction_Folder.open();
+        PinFolder.open();
 
         var Action_Folder = controls.gui.addFolder('Action_Folder');
         Action_Folder.add(controls, "start");

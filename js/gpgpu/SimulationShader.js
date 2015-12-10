@@ -2,10 +2,22 @@
  * @author mrdoob / http://www.mrdoob.com
  */
 
+//TODO! UI Mass not implemented yet
 
 /**********************
-**  Common Features  **
+**      Common       **
 **********************/
+
+function commonUniforms() {
+    return [
+        'uniform int u_rigid;',
+        'uniform float u_wind;',
+        'uniform vec2 Str;',
+        'uniform vec2 Shr;',
+        'uniform vec2 Bnd;',
+    ].join('\n');
+}
+
 function addWind() {
     return [
         'F.x+=u_wind*0.3;',
@@ -28,7 +40,7 @@ function getNeighbor() {
       '     if (n == 5) return vec2(-1.0, -1.0);',
       '     if (n == 6) return vec2(-1.0, 1.0);',
       '     if (n == 7) return vec2(1.0, 1.0);',
-            //bend spring (adjacent neighbors 1 node away)                  //(TODO: far neighbor)
+            //bend spring (adjacent neighbors 1 node away)   
       '     if (n<12) { ks =Bnd[0]; kd = Bnd[1]; }', //ksBnd,kdBnd
       '     if (n == 8)	return vec2(2.0, 0.0);',
       '     if (n == 9) return vec2(0.0, -2.0);',
@@ -58,7 +70,6 @@ function sphereCollision()
         '} ',
     ].join('\n');
 }
-
 
 /**********************
 **      WebGL2       **
@@ -112,11 +123,8 @@ function simulationCommon() {
         'uniform float u_timer;',
         'uniform float u_clothWidth;',
         'uniform float u_clothHeight;',
-        'uniform float u_wind;',
         //'uniform float mass;',
-        'uniform vec2 Str;',
-        'uniform vec2 Shr;',
-        'uniform vec2 Bnd;',
+        commonUniforms(),
         'uniform vec4 u_pins;',
         'uniform vec4 u_newPinPos;',
 
@@ -149,7 +157,7 @@ function simulationCommon() {
       simLoop2(),
 
       'if(pinBoolean); else pos.xyz += vel*timestep;',
-      'sphereCollision(pos.xyz,vec3(0.5,0.45,0.4),0.3);',
+      'if(u_rigid ==  0) sphereCollision(pos.xyz,vec3(0.5,0.45,0.4),0.3);',
     '  return pos;',
       '}',
     ].join('\n');
@@ -290,7 +298,7 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
         gl.uniform1i(uniforms.u_texPos, 0);
         gl.uniform1i(uniforms.u_texPrevPos, 1);
 
-        //gl.uniform1f(uniforms.u_timer, 0.003);
+        gl.uniform1i(uniforms.u_rigid, cfg.getRigid());
         gl.uniform1f(uniforms.u_timer, cfg.getTimeStep());
         gl.uniform1f(uniforms.u_clothWidth, cWidth);
         gl.uniform1f(uniforms.u_clothHeight, cHeight);
@@ -373,6 +381,7 @@ GPGPU.SimulationShader = function () {
     var updateVelMat = new THREE.ShaderMaterial({
 
         uniforms: {
+            u_rigid: { type: "i", value: -1 },
             cloth_w: { type: "f", value: 50.0 },
             tVelocity: { type: "t", value: texture },
             tPositions: { type: "t", value: texture },
@@ -397,10 +406,7 @@ GPGPU.SimulationShader = function () {
             'uniform sampler2D tVelocity;',  
             'uniform sampler2D tPositions;',
             'uniform float timestep;',
-            'uniform vec2 Str ;',
-            'uniform vec2 Shr ;',
-            'uniform vec2 Bnd ;',
-            'uniform float u_wind;',
+            commonUniforms(),
             'float DAMPING = -0.0125;',
             getNeighbor(),
             'void main() {',
@@ -455,6 +461,7 @@ GPGPU.SimulationShader = function () {
 
     var material = new THREE.ShaderMaterial({
         uniforms: {
+            u_rigid: { type: "i", value: -1 },
             cloth_w: { type: "f", value: 50.0 },
             tVelocity: { type: "t", value: texture },
             tPositions: { type: "t", value: texture },
@@ -476,7 +483,7 @@ GPGPU.SimulationShader = function () {
           'varying vec2 vUv;',
 
           'uniform float cloth_w;',
-
+          'uniform int u_rigid;',
           'uniform sampler2D tVelocity;',
           'uniform sampler2D tPositions;',
 
@@ -495,7 +502,7 @@ GPGPU.SimulationShader = function () {
           '}',
           'else{',
                 'if('+pinCondition()+') ; else pos.xyz+=vel.xyz*timer;',//MARK
-                //'sphereCollision(pos.xyz,vec3(0.5,0.45,0.4),0.3);',
+                'if(u_rigid==0) sphereCollision(pos.xyz,vec3(0.5,0.45,0.4),0.3);',
           '}',
 
           '  gl_FragColor = pos;',
@@ -512,6 +519,8 @@ GPGPU.SimulationShader = function () {
         material: material,
 
         setCfgSettings: function (cfg) {
+            material.uniforms.u_rigid.value = cfg.getRigid();
+            updateVelMat.uniforms.u_rigid.value = cfg.getRigid();
             updateVelMat.uniforms.timestep.value = cfg.getTimeStep();
             updateVelMat.uniforms.Str.value = new THREE.Vector2(cfg.getKsString(), -cfg.getKdString());
             updateVelMat.uniforms.Shr.value = new THREE.Vector2(cfg.getKsShear(), -cfg.getKdShear());
