@@ -372,6 +372,37 @@
                 //WebGL 2 mesh
                 mesh = new THREE.PointCloud(vbo_pos, material);
             } else {
+                //Try triangle:
+                var triangleGeo = new THREE.Geometry();
+                triangleGeo.vertices.push(
+                    new THREE.Vector3(-1, 1, 0),
+                    new THREE.Vector3(-1, -1, 0),
+                    new THREE.Vector3(1, -1, 0),
+                    new THREE.Vector3(2, -2, 0),
+                    new THREE.Vector3(3, -2, 0)
+                 );
+
+                triangleGeo.faces.push(new THREE.Face3(0, 1, 2));
+                triangleGeo.faces.push(new THREE.Face3(2, 3, 4));
+                triangleGeo.computeBoundingSphere();
+
+                var triangleMat = new THREE.ShaderMaterial({
+                    vertexShader: [
+                        'void main() {',
+                        //'position.x+=0.1;',
+                        '  gl_Position = projectionMatrix * modelViewMatrix * vec4( position + vec3(2.5,0.0,0.0), 1.0 );',
+                        '}',
+                    ].join('\n'),
+                    fragmentShader: [
+                        'void main() {',
+                        '  gl_FragColor = vec4(1.0,0.0,1.0,1.0);',
+                        '}',
+                    ].join('\n'),
+                });
+
+                var triangleMesh = new THREE.Mesh(triangleGeo, triangleMat);
+                scene.add(triangleMesh);
+
 
                 //WebGL 1+
                 texture = new THREE.DataTexture(data, cloth_w, cloth_h, THREE.RGBAFormat, THREE.FloatType);
