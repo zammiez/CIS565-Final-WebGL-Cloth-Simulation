@@ -64,7 +64,8 @@
         varying vec4 vPosition;
         void main() {
         float depth = smoothstep( 10.24, 1.0, gl_FragCoord.z / gl_FragCoord.w );
-        gl_FragColor = vec4( (vec3(0.0, 0.03, 0.05) + (texture2D( map, vUv ).xyz * 0.25)), depth );
+        gl_FragColor = vec4( vec3(0.1,0.1,0.8), depth );
+        //gl_FragColor = vec4( (vec3(0.0, 0.03, 0.05) + (texture2D( map, vUv ).xyz * 0.25)), depth );
         }
     </script>
     <!-- WebGL 2 shaders -->
@@ -373,19 +374,6 @@
                 mesh = new THREE.PointCloud(vbo_pos, material);
             } else {
                 //Try triangle:
-                var triangleGeo = new THREE.Geometry();
-                triangleGeo.vertices.push(
-                    new THREE.Vector3(-1, 1, 0),
-                    new THREE.Vector3(-1, -1, 0),
-                    new THREE.Vector3(1, -1, 0),
-                    new THREE.Vector3(2, -2, 0),
-                    new THREE.Vector3(3, -2, 0)
-                 );
-
-                triangleGeo.faces.push(new THREE.Face3(0, 1, 2));
-                triangleGeo.faces.push(new THREE.Face3(2, 3, 4));
-                triangleGeo.computeBoundingSphere();
-
                 var triangleMat = new THREE.ShaderMaterial({
                     vertexShader: [
                         'void main() {',
@@ -400,9 +388,8 @@
                     ].join('\n'),
                 });
 
-                var triangleMesh = new THREE.Mesh(triangleGeo, triangleMat);
-                scene.add(triangleMesh);
-
+               // var triangleMesh = new THREE.Mesh(triangleGeo, triangleMat);
+               // scene.add(triangleMesh);
 
                 //WebGL 1+
                 texture = new THREE.DataTexture(data, cloth_w, cloth_h, THREE.RGBAFormat, THREE.FloatType);
@@ -437,10 +424,24 @@
                     geometry.vertices.push(vertex);
                 }
                 //Testing.
-                geometry.faces.push(new THREE.Face3(0, 1, cloth_w));
-                geometry.faces.push(new THREE.Face3(1, 2, cloth_w + 1));
-                geometry.faces.push(new THREE.Face3(2, 3, cloth_w + 2));
-                geometry.faces.push(new THREE.Face3(3, 4, cloth_w + 3));
+                //*
+                for (var x = 0; x < cloth_w-1; x++)
+                {
+                    for (var y = 0; y < cloth_h-1; y++) {
+                        //geometry.faces.push(new THREE.Face3(x + cloth_w * y, x + 1 + cloth_w * y, cloth_h + x + cloth_w * y-1));
+                        
+                        geometry.faces.push(new THREE.Face3(x + cloth_w * y - 1 + cloth_h, x + cloth_w * y + cloth_h, x + 1 + cloth_w * y));
+                        geometry.faces.push(new THREE.Face3(x + cloth_w * y + cloth_h, x + cloth_w * y, x + 1 + cloth_w * y));
+
+                        //geometry.faces.push(new THREE.Face3(x,y,0));
+                    }
+                }
+                //*/
+                //geometry.computeBoundingSphere();
+                //geometry.faces.push(new THREE.Face3(0, 1, 2));
+                //geometry.faces.push(new THREE.Face3(1, 2, cloth_w + 1));
+                //geometry.faces.push(new THREE.Face3(2, 3, cloth_w + 2));
+                //geometry.faces.push(new THREE.Face3(3, 4, cloth_w + 3));
 
                 material = new THREE.ShaderMaterial({
                     uniforms: {
@@ -457,8 +458,8 @@
                     transparent: true
                 });
                 //WebGl 1 Mesh
-                mesh = new THREE.PointCloud(geometry, material);
-               // mesh = new THREE.Mesh(geometry, material);
+               // mesh = new THREE.PointCloud(geometry, material);//triangleMat
+                mesh = new THREE.Mesh(geometry, material);
             }
 
             
