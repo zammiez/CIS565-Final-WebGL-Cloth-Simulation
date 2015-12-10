@@ -428,12 +428,14 @@
                 for (var x = 0; x < cloth_w-1; x++)
                 {
                     for (var y = 0; y < cloth_h-1; y++) {
-                        //geometry.faces.push(new THREE.Face3(x + cloth_w * y, x + 1 + cloth_w * y, cloth_h + x + cloth_w * y-1));
-                        
-                        geometry.faces.push(new THREE.Face3(x + cloth_w * y - 1 + cloth_h, x + cloth_w * y + cloth_h, x + 1 + cloth_w * y));
-                        geometry.faces.push(new THREE.Face3(x + cloth_w * y + cloth_h, x + cloth_w * y, x + 1 + cloth_w * y));
 
-                        //geometry.faces.push(new THREE.Face3(x,y,0));
+                        var v0 = x + cloth_w * y;
+                        var v1 = x + cloth_w * y + cloth_h;
+
+                        //geometry.faces.push(new THREE.Face3(v1 + 1, v0, v1));
+                        geometry.faces.push(new THREE.Face3(v1, v0 + 1, v0));
+                        geometry.faces.push(new THREE.Face3(v1, v1 + 1, v0 + 1));
+
                     }
                 }
                 //*/
