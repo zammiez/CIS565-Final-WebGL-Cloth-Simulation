@@ -116,10 +116,10 @@ function simulationCommon() {
     //UBO:
     //http://www.opentk.com/node/2926
     return [
-        //'layout(std140) uniform u_tryUBO{',
-        //'   vec4 uboTry1;',
-        //'   vec4 uboTry2;',
-        //'};',
+        'layout(std140) uniform u_tryUBO{',
+        '   vec4 uboTry1;',
+        '   vec4 uboTry2;',
+        '};',
         'uniform float u_timer;',
         'uniform float u_clothWidth;',
         'uniform float u_clothHeight;',
@@ -311,14 +311,14 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
         
         gl.uniform4f(uniforms.u_pins, cfg.getPin1(), cfg.getPin2(), cfg.getPin3(), cfg.getPin4());
         gl.uniform4f(uniforms.u_newPinPos, usrCtrl.uniformPins[0], usrCtrl.uniformPins[1], usrCtrl.uniformPins[2], usrCtrl.uniformPins[3]);
-        /*
+
         //UBO:
         //https://www.packtpub.com/books/content/opengl-40-using-uniform-blocks-and-uniform-buffer-objects
         //1. get index of uniform block
         var blockIdx = gl.getUniformBlockIndex(program, "u_tryUBO");
         //2. allocate space for buffer
         var blockSize = gl.getActiveUniformBlockParameter(program, blockIdx, gl.UNIFORM_BLOCK_DATA_SIZE);
-        var blockBuffer = gl.createBuffer();
+        //var blockBuffer = gl.createBuffer();
         //3. Query for the offset of each variable within the block
         var names = ["uboTry1", "uboTry2"];
             //var indices = new Int16Array(2);
@@ -326,16 +326,20 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
         var offset = gl.getActiveUniforms(program, indices, gl.UNIFORM_OFFSET);
         debugger;
         //4. Place the data into buffer
-        var try1 = [0.1, 0.2, 0.3, 0.4];
-        var try2 = [0.5, 0.6, 0.7, 0.8];
+        var tryUBOdata = new Float32Array(blockSize);
+        tryUBOdata = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8];
+        //var try2 = [0.5, 0.6, 0.7, 0.8];
+        //?????
         //5. Create the OpenGL buffer object and copy data into it
+        var uboHandle = gl.createBuffer();
+        gl.bindBuffer(gl.UNIFORM_BUFFER, uboHandle);
+        //gl.bufferData(gl.UNIFORM_BUFFER, blockSize, tryUBOdata, gl.DYNAMIC_DRAW);
+        gl.bufferData(gl.UNIFORM_BUFFER, blockSize, gl.DYNAMIC_DRAW);
+        gl.bufferData(gl.UNIFORM_BUFFER, tryUBOdata, gl.DYNAMIC_DRAW);
+        debugger;
         //6. bind the buffer object to the uniform block
-        
-            'layout (std140) uniform u_tryUBO{',
-            '   vec4 uboTry1;',
-            '   vec4 uboTry2;',
-            '};',
-        */
+        gl.bindBufferBase(gl.UNIFORM_BUFFER, blockIdx, uboHandle);
+        debugger;
     },
 
     setTimer: function ( timer ) {
