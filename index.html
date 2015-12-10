@@ -51,21 +51,39 @@
         uniform float pointSize;
         varying vec2 vUv;
         varying vec4 vPosition;
+        varying vec3 vNormal;
         void main() {
         vUv = position.xy + vec2( 0.5 / width, 0.5 / height );
         vec3 color = texture2D( map, vUv ).rgb;
+
+        vec3 color_n1 = texture2D( map, vUv+vec2(0.0,1.0/width) ).rgb;
+        vec3 color_n2 = texture2D( map, vUv+vec2(1.0/width,0.0) ).rgb;
+
+        vec3 e1 = color_n1-color;
+        vec3 e2 = color_n2-color;
+
+        vNormal.x = e1.y*e2.z-e1.z*e2.y;
+        vNormal.y = e1.z*e2.x-e1.x*e2.z;
+        vNormal.z = e1.x*e2.y-e1.y*e2.x;
+
+        vNormal = normalize(vNormal);
+
         gl_PointSize = pointSize;
         gl_Position = projectionMatrix * modelViewMatrix * vec4( color, 1.0 );
+
         }
     </script>
     <script id="fs-particles" type="x-shader/x-fragment">
         uniform sampler2D map;
         varying vec2 vUv;
         varying vec4 vPosition;
+        varying vec3 vNormal;
         void main() {
         float depth = smoothstep( 10.24, 1.0, gl_FragCoord.z / gl_FragCoord.w );
-        gl_FragColor = vec4( vec3(0.1,0.1,0.8), depth );
+        //gl_FragColor = vec4( vec3(0.1,0.1,0.8), depth );
         //gl_FragColor = vec4( (vec3(0.0, 0.03, 0.05) + (texture2D( map, vUv ).xyz * 0.25)), depth );
+        //gl_FragColor = vec4( (vec3(0.0, 0.03, 0.05) + (texture2D( map, vUv ).xyz * 0.25)), 1.0 );
+        gl_FragColor = vec4(vNormal,1.0);
         }
     </script>
     <!-- WebGL 2 shaders -->
@@ -261,7 +279,7 @@
 
 
             // prepare text geometry
-           
+
             var textGeometry = new THREE.TextGeometry(isWebGL2 ? "WebGL 2 Cloth Simulation" : "WebGL Cloth Simulation", {
                 size: 0.4, // Font size
                 height: 0.05, // Font height (depth)
@@ -276,20 +294,20 @@
                 extrudeMaterial: 1 // Side (extrude) material
             });
 
-        var materialFront = new THREE.MeshPhongMaterial({ map: texture, color: 0xffff00, emissive: 0x888888 });
-        
-        var materialSide = new THREE.MeshPhongMaterial({ map: texture, color: 0xff00ff, emissive: 0x444444 });
-    
-        var textMaterial = new THREE.MeshFaceMaterial([ materialFront, materialSide ]);
+            var materialFront = new THREE.MeshPhongMaterial({ map: texture, color: 0xffff00, emissive: 0x888888 });
 
-        var textMesh = new THREE.Mesh(textGeometry, textMaterial);
+            var materialSide = new THREE.MeshPhongMaterial({ map: texture, color: 0xff00ff, emissive: 0x444444 });
 
-        textMesh.castShadow = true;
+            var textMaterial = new THREE.MeshFaceMaterial([materialFront, materialSide]);
 
-        textMesh.position.set(-3.4,1.6,-2.6);
-        //textMesh.rotation.x = -0.3;
+            var textMesh = new THREE.Mesh(textGeometry, textMaterial);
 
-        scene.add(textMesh);
+            textMesh.castShadow = true;
+
+            textMesh.position.set(-3.4, 1.6, -2.6);
+            //textMesh.rotation.x = -0.3;
+
+            scene.add(textMesh);
 
 
             var sphereMaterial = new THREE.MeshLambertMaterial({ color: 0x00008B });
@@ -324,21 +342,21 @@
             // Start Creation of DataTexture
             cloth_h = 50;
             cloth_w = cloth_h;
-            
+
             data = new Float32Array(cloth_w * cloth_h * 4);
             vtxIds = new Float32Array(cloth_w * cloth_h * 4);
-            for (var i = 0, t = 0, x = 0; x <cloth_w; x++) {
+            for (var i = 0, t = 0, x = 0; x < cloth_w; x++) {
                 for (var y = 0; y < cloth_h; y++) {
-                     data[i + 0] = x * 1.0 / cloth_w;
+                    data[i + 0] = x * 1.0 / cloth_w;
                     data[i + 1] = 1.0;
                     data[i + 2] = y * 1.0 / cloth_h; //-y * 1.0 / cloth_h;
                     data[i + 3] = 0.1;
-                    
+
                     vtxIds[i + 0] = t;
                     vtxIds[i + 1] = t;
                     vtxIds[i + 2] = t;
                     vtxIds[i + 3] = t;
-                    
+
                     i += 4;
                     t++;
                 }
@@ -388,8 +406,8 @@
                     ].join('\n'),
                 });
 
-               // var triangleMesh = new THREE.Mesh(triangleGeo, triangleMat);
-               // scene.add(triangleMesh);
+                // var triangleMesh = new THREE.Mesh(triangleGeo, triangleMat);
+                // scene.add(triangleMesh);
 
                 //WebGL 1+
                 texture = new THREE.DataTexture(data, cloth_w, cloth_h, THREE.RGBAFormat, THREE.FloatType);
@@ -424,9 +442,8 @@
                     geometry.vertices.push(vertex);
                 }
 
-                for (var x = 0; x < cloth_w-1; x++)
-                {
-                    for (var y = 0; y < cloth_h-1; y++) {
+                for (var x = 0; x < cloth_w - 1; x++) {
+                    for (var y = 0; y < cloth_h - 1; y++) {
 
                         var v0 = x + cloth_w * y;
                         var v1 = x + cloth_w * y + cloth_h;
@@ -455,11 +472,11 @@
                     transparent: true
                 });
                 //WebGl 1 Mesh
-               // mesh = new THREE.PointCloud(geometry, material);//triangleMat
+                // mesh = new THREE.PointCloud(geometry, material);//triangleMat
                 mesh = new THREE.Mesh(geometry, material);
             }
 
-            
+
             //mesh = new THREE.Points(vbo_pos, material);
             scene.add(mesh);
 
@@ -469,6 +486,7 @@
             window.addEventListener('mousedown', onMouseDown, false);
             window.addEventListener('mouseup', onMouseUp, false);
         }
+
         function onMouseDown(event) {
             moved = false;
             var mouseX = (event.clientX / window.innerWidth) * 2 - 1;
