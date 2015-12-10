@@ -182,11 +182,13 @@
             } else {
                 // Update position of the plane if need
                 usrControl.uniformPins[3] = 0.0;
+
                 var intersects = raycaster.intersectObjects(usrControl.pinObjects);
                 if (intersects.length > 0) {
                     usrControl.plane.position.copy(intersects[0].object.position);
                     usrControl.plane.lookAt(camera.position);
                 }
+
                 if (!camControl.enabled) {
                     camControl = new THREE.OrbitControls(camera);//??!!
                     //camControl.enabled = true;
@@ -367,6 +369,7 @@
                 gpgpu.init(data);
                 simulationShader = new GPGPU2.SimulationShader2(renderer, cloth_w, cloth_h);
 
+                //WebGL 2 mesh
                 mesh = new THREE.PointCloud(vbo_pos, material);
             } else {
 
@@ -402,6 +405,11 @@
                     vertex.y = Math.floor(i / cloth_w) / cloth_h;
                     geometry.vertices.push(vertex);
                 }
+                //Testing.
+                geometry.faces.push(new THREE.Face3(0, 1, cloth_w));
+                geometry.faces.push(new THREE.Face3(1, 2, cloth_w + 1));
+                geometry.faces.push(new THREE.Face3(2, 3, cloth_w + 2));
+                geometry.faces.push(new THREE.Face3(3, 4, cloth_w + 3));
 
                 material = new THREE.ShaderMaterial({
                     uniforms: {
@@ -417,7 +425,9 @@
                     depthTest: true,
                     transparent: true
                 });
+                //WebGl 1 Mesh
                 mesh = new THREE.PointCloud(geometry, material);
+               // mesh = new THREE.Mesh(geometry, material);
             }
 
             
