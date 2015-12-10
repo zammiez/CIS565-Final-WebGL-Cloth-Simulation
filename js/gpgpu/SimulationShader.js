@@ -116,10 +116,12 @@ function simulationCommon() {
     //UBO:
     //http://www.opentk.com/node/2926
     return [
+        //*
         'layout(std140) uniform u_tryUBO{',
         '   vec4 uboTry1;',
         '   vec4 uboTry2;',
         '};',
+        //*/
         'uniform float u_timer;',
         'uniform float u_clothWidth;',
         'uniform float u_clothHeight;',
@@ -135,7 +137,11 @@ function simulationCommon() {
         sphereCollision(),
         getNeighbor(),
 
-      'vec4 runSimulation(vec4 pos,float v_id) {',
+      'vec4 runSimulation(vec4 pos,float v_id) {', 
+      //DELETE: TEST UBO
+      'pos.x+=uboTry1.x*0.001;',
+      'pos.y+=uboTry1.y*0.001;',
+      'return pos;',
 
       'float xid = float( int(v_id)/int(u_clothWidth));',
       'float yid = v_id - u_clothWidth*xid;',
@@ -158,7 +164,7 @@ function simulationCommon() {
 
       'if(pinBoolean); else pos.xyz += vel*timestep;',
       'if(u_rigid ==  0) sphereCollision(pos.xyz,vec3(0.5,0.45,0.4),0.3);',
-    '  return pos;',
+      'return pos;',
       '}',
     ].join('\n');
 }
