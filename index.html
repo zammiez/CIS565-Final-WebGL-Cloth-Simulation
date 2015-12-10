@@ -52,19 +52,40 @@
         varying vec2 vUv;
         varying vec4 vPosition;
         varying vec3 vNormal;
+
+        vec3 calcNormal(vec3 p1,vec3 p2,vec3 p3)
+        {
+            vec3 nor;
+            vec3 e1 = p2-p1;
+            vec3 e2 = p3-p1;
+
+            nor.x = e1.y*e2.z-e1.z*e2.y;
+            nor.y = e1.z*e2.x-e1.x*e2.z;
+            nor.z = e1.x*e2.y-e1.y*e2.x;
+
+            return nor;
+        }
+
         void main() {
         vUv = position.xy + vec2( 0.5 / width, 0.5 / height );
         vec3 color = texture2D( map, vUv ).rgb;
+        vPosition = vec4(color,1.0);
 
-        vec3 color_n1 = texture2D( map, vUv+vec2(0.0,1.0/width) ).rgb;
-        vec3 color_n2 = texture2D( map, vUv+vec2(1.0/width,0.0) ).rgb;
+        vec3 up = texture2D( map, vUv + vec2(0.0,1.0/height) ).rgb;
+        vec3 down = texture2D( map, vUv + vec2(0.0,-1.0/height) ).rgb;
+        vec3 left = texture2D( map, vUv + vec2(-1.0/width) ).rgb;
+        vec3 right = texture2D( map, vUv + vec2(1.0/width)).rgb;
+        
+        vNormal =  calcNormal(color,up,right);
+        vec3 nor1 = calcNormal(color,right,down);
+        vec3 nor2 = calcNormal(color,down,left);
+        vec3 nor3 = calcNormal(color,right,up);
 
-        vec3 e1 = color_n1-color;
-        vec3 e2 = color_n2-color;
+        if( dot(vNormal,nor1)>0.0 ) nor1 = -nor1;
+        if( dot(vNormal,nor2)>0.0 ) nor2 = -nor2;
+        if( dot(vNormal,nor3)>0.0 ) nor3 = -nor3;
 
-        vNormal.x = e1.y*e2.z-e1.z*e2.y;
-        vNormal.y = e1.z*e2.x-e1.x*e2.z;
-        vNormal.z = e1.x*e2.y-e1.y*e2.x;
+        vNormal+= nor1+nor2+nor3;
 
         vNormal = normalize(vNormal);
 
@@ -75,15 +96,35 @@
     </script>
     <script id="fs-particles" type="x-shader/x-fragment">
         uniform sampler2D map;
+        uniform vec3 camPos;
         varying vec2 vUv;
         varying vec4 vPosition;
         varying vec3 vNormal;
         void main() {
+
         float depth = smoothstep( 10.24, 1.0, gl_FragCoord.z / gl_FragCoord.w );
-        //gl_FragColor = vec4( vec3(0.1,0.1,0.8), depth );
-        //gl_FragColor = vec4( (vec3(0.0, 0.03, 0.05) + (texture2D( map, vUv ).xyz * 0.25)), depth );
+        vec3 pos = vPosition.xyz;
+        vec3 viewDir = normalize(camPos - pos);
+
+        vec3 nor = vNormal;
+        if(dot(viewDir,nor)<=0.0) nor = -nor;
+
+        vec3 lightDir = vec3(1.0,1.0,1.0);//TODO:light direction
+        vec3 reflDir = reflect(-lightDir,nor);
+
+        float lamb = max(dot(lightDir,nor),0.0);
+        float spec = 0.0;
+        float amb = 0.02;
+        vec3 col;
+        vec3 lightCol = vec3(0.1,0.1,0.4);
+        if(lamb>0.0)
+        {
+        float specAngle = max(dot(reflDir,viewDir),0.0);
+        spec = pow(specAngle,4.0);
+        }
+        
         //gl_FragColor = vec4( (vec3(0.0, 0.03, 0.05) + (texture2D( map, vUv ).xyz * 0.25)), 1.0 );
-        gl_FragColor = vec4(vNormal,1.0);
+        gl_FragColor = vec4((lamb+spec+ amb)*lightCol ,1.0);
         }
     </script>
     <!-- WebGL 2 shaders -->
@@ -462,14 +503,15 @@
                         "map": { type: "t", value: texture },
                         "width": { type: "f", value: cloth_w },
                         "height": { type: "f", value: cloth_h },
-                        "pointSize": { type: "f", value: pointSize }
+                        "pointSize": { type: "f", value: pointSize },
+                        "camPos": { type: "v3", value: camera.position }
                     },
                     vertexShader: document.getElementById('vs-particles').textContent,
                     fragmentShader: document.getElementById('fs-particles').textContent,
                     blending: THREE.AdditiveBlending,
-                    depthWrite: false,
-                    depthTest: true,
-                    transparent: true
+                    //depthWrite: false,
+                    //depthTest: true,
+                    //transparent: true
                 });
                 //WebGl 1 Mesh
                 // mesh = new THREE.PointCloud(geometry, material);//triangleMat
@@ -602,14 +644,15 @@
                         "map": { type: "t", value: rtTexturePos },
                         "width": { type: "f", value: cloth_w },
                         "height": { type: "f", value: cloth_h },
-                        "pointSize": { type: "f", value: pointSize }
+                        "pointSize": { type: "f", value: pointSize },
+                        "camPos": { type: "v3", value: camera.position }
                     },
                     vertexShader: document.getElementById('vs-particles').textContent,
                     fragmentShader: document.getElementById('fs-particles').textContent,
                     blending: THREE.AdditiveBlending,
-                    depthWrite: false,
-                    depthTest: true,
-                    transparent: true
+                    //depthWrite: false,
+                    //depthTest: true,
+                    //transparent: true
                 });
                 count = 0;
                 //mesh.material = material;
