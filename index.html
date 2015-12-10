@@ -423,8 +423,7 @@
                     vertex.y = Math.floor(i / cloth_w) / cloth_h;
                     geometry.vertices.push(vertex);
                 }
-                //Testing.
-                //*
+
                 for (var x = 0; x < cloth_w-1; x++)
                 {
                     for (var y = 0; y < cloth_h-1; y++) {
@@ -435,15 +434,11 @@
                         //geometry.faces.push(new THREE.Face3(v1 + 1, v0, v1));
                         geometry.faces.push(new THREE.Face3(v1, v0 + 1, v0));
                         geometry.faces.push(new THREE.Face3(v1, v1 + 1, v0 + 1));
-
+                        //TODO: Other side
+                        geometry.faces.push(new THREE.Face3(v0 + 1, v1, v0));
+                        geometry.faces.push(new THREE.Face3(v1 + 1, v1, v0 + 1));
                     }
                 }
-                //*/
-                //geometry.computeBoundingSphere();
-                //geometry.faces.push(new THREE.Face3(0, 1, 2));
-                //geometry.faces.push(new THREE.Face3(1, 2, cloth_w + 1));
-                //geometry.faces.push(new THREE.Face3(2, 3, cloth_w + 2));
-                //geometry.faces.push(new THREE.Face3(3, 4, cloth_w + 3));
 
                 material = new THREE.ShaderMaterial({
                     uniforms: {
