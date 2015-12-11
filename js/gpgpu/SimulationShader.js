@@ -139,8 +139,10 @@ function simulationCommon() {
 
       'vec4 runSimulation(vec4 pos,float v_id) {', 
       //DELETE: TEST UBO
-      'pos.x+=uboTry1.x*0.001;',
-      'pos.y+=uboTry1.y*0.001;',
+      //'pos.x+=0.01;',
+      'pos.x-=uboTry1.x*0.02;',
+      'pos.y-=uboTry1.y*0.02;',
+     // 'pos.z+=uboTry2.z*0.02;',
       'return pos;',
 
       'float xid = float( int(v_id)/int(u_clothWidth));',
@@ -265,6 +267,7 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
   var timerValue = 0;
   var cWidth = c_w;
   var cHeight = c_h;
+  var uboHandle = gl.createBuffer();
 
   return {
     program: program,
@@ -318,10 +321,41 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
         gl.uniform4f(uniforms.u_pins, cfg.getPin1(), cfg.getPin2(), cfg.getPin3(), cfg.getPin4());
         gl.uniform4f(uniforms.u_newPinPos, usrCtrl.uniformPins[0], usrCtrl.uniformPins[1], usrCtrl.uniformPins[2], usrCtrl.uniformPins[3]);
 
+        //*
+        //UBO
+        //http://learnopengl.com/#!Advanced-OpenGL/Advanced-GLSL
+
+        //1. get block index, set uniform block to binding point 0
+        var blockIdx = gl.getUniformBlockIndex(program, "u_tryUBO");
+        gl.uniformBlockBinding(program, blockIdx, 0);
+        debugger;
+        //2. create uniform buffer object and bind buffer to binding point 0
+        var tryUBOdata = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8];
+        
+        gl.bindBuffer(gl.UNIFORM_BUFFER, uboHandle);
+        var blockSize = gl.getActiveUniformBlockParameter(program, blockIdx, gl.UNIFORM_BLOCK_DATA_SIZE);
+        gl.bufferData(gl.UNIFORM_BUFFER, blockSize, gl.DYNAMIC_DRAW);//static or dynamic??
+        gl.bindBuffer(gl.UNIFORM_BUFFER, null);
+
+        gl.bindBufferRange(gl.UNIFORM_BUFFER, 0, uboHandle, 0, blockSize);
+
+        //3. fill the buffer
+        gl.bindBuffer(gl.UNIFORM_BUFFER, uboHandle);
+        gl.bufferData(gl.UNIFORM_BUFFER, tryUBOdata, gl.DYNAMIC_DRAW);// bufferSubData??
+        gl.bindBuffer(gl.UNIFORM_BUFFER, null);
+
+        gl.bindBufferBase(gl.UNIFORM_BUFFER, blockIdx, uboHandle);
+        debugger;
+       // */
+
+        /*
         //UBO:
         //https://www.packtpub.com/books/content/opengl-40-using-uniform-blocks-and-uniform-buffer-objects
+        //http://www.geeks3d.com/20140704/gpu-buffers-introduction-to-opengl-3-1-uniform-buffers-objects/
+        
         //1. get index of uniform block
         var blockIdx = gl.getUniformBlockIndex(program, "u_tryUBO");
+        gl.uniformBlockBinding(program, blockIdx, 0);
         //2. allocate space for buffer
         var blockSize = gl.getActiveUniformBlockParameter(program, blockIdx, gl.UNIFORM_BLOCK_DATA_SIZE);
         //var blockBuffer = gl.createBuffer();
@@ -330,7 +364,7 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
             //var indices = new Int16Array(2);
         var indices = gl.getUniformIndices(program, names);
         var offset = gl.getActiveUniforms(program, indices, gl.UNIFORM_OFFSET);
-        debugger;
+        //debugger;
         //4. Place the data into buffer
         var tryUBOdata = new Float32Array(blockSize);
         tryUBOdata = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8];
@@ -340,12 +374,14 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
         var uboHandle = gl.createBuffer();
         gl.bindBuffer(gl.UNIFORM_BUFFER, uboHandle);
         //gl.bufferData(gl.UNIFORM_BUFFER, blockSize, tryUBOdata, gl.DYNAMIC_DRAW);
-        gl.bufferData(gl.UNIFORM_BUFFER, blockSize, gl.DYNAMIC_DRAW);
-        gl.bufferData(gl.UNIFORM_BUFFER, tryUBOdata, gl.DYNAMIC_DRAW);
-        debugger;
+        //gl.bufferData(gl.UNIFORM_BUFFER, blockSize, gl.DYNAMIC_DRAW);
+        gl.bufferData(gl.UNIFORM_BUFFER, tryUBOdata, gl.STATIC_DRAW);
+        gl.bindBuffer(gl.UNIFORM_BUFFER, null);
+        //debugger;
         //6. bind the buffer object to the uniform block
         gl.bindBufferBase(gl.UNIFORM_BUFFER, blockIdx, uboHandle);
-        debugger;
+        //debugger;
+        //*/
     },
 
     setTimer: function ( timer ) {

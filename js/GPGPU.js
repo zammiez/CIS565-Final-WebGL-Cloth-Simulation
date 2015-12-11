@@ -49,10 +49,11 @@ var GPGPU2 = function (renderer,cloth_w,cloth_h) {
             // Unbind the transform feedback buffer so subsequent attempts
             // to bind it to ARRAY_BUFFER work.
             gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, null);
-
+            gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, null);
             gl.bindBuffer(gl.ARRAY_BUFFER, target.attributes['position'].buffer);
             gl.getBufferSubData(gl.ARRAY_BUFFER, 0, arrBuffer);
             posData = new Float32Array(arrBuffer);
+            debugger;
             gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
             //gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 1, null);
