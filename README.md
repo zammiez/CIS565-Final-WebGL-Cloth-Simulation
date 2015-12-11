@@ -70,6 +70,7 @@ Otherwise, if the browser supports WebGL 2.0, there would be "WebGL 2 Cloth Simu
 	* **Pins**
 
 	  There are two kinds of pins: pin points and pin edges. Select them under Interaction_Folder->Edges or ->Pins
+	  
 	  ![](Image/pinEdge.PNG)
 
 	  WebGL 2 version is supporting movable pin.
@@ -78,9 +79,13 @@ Otherwise, if the browser supports WebGL 2.0, there would be "WebGL 2 Cloth Simu
 
 ### 1.2 Implementation
 
+#### Ping-ponging Texture
+
+![](Image/PinPong.jpg)
+
 #### Transform Feedback
 
-#### Ping-ponging Texture
+![](Image/Transf.jpg)
 
 #### Mass-Spring Cloth Simulation
 
@@ -109,11 +114,18 @@ Below are clothes with 20*20, 50*50, 100*100 and 150*150 particles respectively 
 To get the same simulation result as cloth with lower particle count, we need to decrease the value of single particle mass, or increase the value of string parameters.
 Either way, a smaller timestep is always needed to ensure a stable system.
 
-|timestep:0.001				|timestep:0.001			
-|:---------------------------:|:-------------------------:
+|timestep:0.001				|timestep:0.003			
+|:-------------------------:|:-------------------------:
 |![](Image/100deltT001.PNG)	|![](Image/100deltT003.PNG)	
 
 ### 2.2 Code Quality
 
 3.References
 --------------------------------------------
+
+[WebGL 2.0 Particles](https://github.com/toji/webgl2-particles)
+
+[OpenGL Insights.Chap 17](http://openglinsights.com/bendingthepipeline.html#RealTimePhysicallyBasedDeformationUsingTransformFeedback)
+
+[Game Engine Gems 2.Chap 22](http://www.crcnetbase.com/doi/abs/10.1201/b11333-25)
+
