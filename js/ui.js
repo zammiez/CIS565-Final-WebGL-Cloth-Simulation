@@ -18,6 +18,10 @@ var UI_cfg = function () {
         "Rigidbody":-1,
         "Wind": false,
         "Wind Force": 0.5,
+        "edge 1": false,
+        "edge 2": false,
+        "edge 3": false,
+        "edge 4": false,
         "pin 1": true,
         "pin 2": true,
         "pin 3": false,
@@ -76,6 +80,15 @@ var UI_cfg = function () {
         return 0.0;
     }
 
+    this.getEdge = function () {
+        var result = 0;
+        if (controls['edge 1']) result += 8;
+        if (controls['edge 2']) result += 4;
+        if (controls['edge 3']) result += 2;
+        if (controls['edge 4']) result += 1;
+        return result;
+    };
+
     this.getPin1 = function () {
         if (controls['pin 1'])
             return 1.0;
@@ -130,6 +143,11 @@ var UI_cfg = function () {
         })
         Interaction_Folder.add(controls, "Wind");
         Interaction_Folder.add(controls, "Wind Force");
+        var EdgeFolder = Interaction_Folder.addFolder('Edges');
+        EdgeFolder.add(controls, "edge 1");
+        EdgeFolder.add(controls, "edge 2");
+        EdgeFolder.add(controls, "edge 3");
+        EdgeFolder.add(controls, "edge 4");
         var PinFolder  = Interaction_Folder.addFolder('Pins');
         PinFolder.add(controls, "pin 1");
         PinFolder.add(controls, "pin 2");
