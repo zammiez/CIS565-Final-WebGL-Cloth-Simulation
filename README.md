@@ -6,7 +6,7 @@ by: [Ziwei Zong](https://www.ziweizong.com)
 * LinkedIn: [Ziwei Zong](https://www.linkedin.com/in/ziweizong)
 * Twitter:  [@zzammie_zz](https://twitter.com/zammie_zz)
 
-0.Overview
+0. Overview
 --------------------------------------------
 
 Cloth Simulation using transform feedback for WebGL 2.0 supported browsers and ping-ponging texture method for browsers only supporting WebGL 1.0.
@@ -22,10 +22,10 @@ WebGL 1.0 version tested successfully on Chrome(Windows), Chrome Canary (Windows
 
 ![](Image/image.PNG)
 
-1.Instructions
+1. Instructions
 --------------------------------------------
 
-## 1.1 How to use
+### 1.1 How to use
 
 #### 1.1.1 Enable WebGL 2.0
 
@@ -42,39 +42,40 @@ Otherwise, if the browser supports WebGL 2.0, there would be "WebGL 2 Cloth Simu
 
 * **Settings and Basic Animation Control**
 
-![](Image/Settings.PNG)|![](Image/AnimationControl.PNG)
+	![](Image/Settings.PNG)|![](Image/AnimationControl.PNG)
 
-(1) Render Mode
+	* Render Mode
 
-|Points						|Triangle
-|:-------------------------:|:-------------------:
-|![](Image/SettingPoint.PNG)|![](Image/SettingTri.PNG)
-|:-------------------------:|:-------------------:
-|![](Image/Points.PNG)		|![](Image/Triangles.PNG)
+	|Points						|Triangle
+	|:-------------------------:|:-------------------:
+	|![](Image/SettingPoint.PNG)|![](Image/SettingTri.PNG)
+	|![](Image/Points.PNG)		|![](Image/Triangles.PNG)
 
 * **Interactions**
 
-	* (1) RigidBody
+	* RigidBody
 
-![](Image/RigidControl.PNG)
+	  ![](Image/RigidControl.PNG)
 
-Cloth-Rigidbody collision is more stable in WebGL2 implementation than in WebGL1.
+	  Cloth-Rigidbody collision is more stable in WebGL2 implementation than in WebGL1.
 
-|WebGL 1.0 Rigidbody		|WebGL 2.0 Rigidbody 
-|:-------------------------:|:-------------------:
-|![](Image/Rigid1.PNG)		|![](Image/Rigid2.PNG)
+	  |WebGL 1.0 Rigidbody		|WebGL 2.0 Rigidbody 
+	  |:-------------------------:|:-------------------:
+	  |![](Image/Rigid1.PNG)		|![](Image/Rigid2.PNG)
 
-(2) Wind
+	* Wind
 
-TODO: add pic here
+	  TODO: add pic here
 
-(3) Pins
+	* Pins
+	There are two kinds of pins: pin points and pin edges. Select them under Interaction_Folder->Edges or ->Pins
+	![](Image/pinEdge.PNG)
 
-![](Image/Pins.PNG)
+	WebGL 2 version is supporting movable pin.
 
-TODO: movable pin gif.
+	TODO: movable pin gif.
 
-## 1.2 Implementation
+### 1.2 Implementation
 
 #### Transform Feedback
 
@@ -82,12 +83,12 @@ TODO: movable pin gif.
 
 #### Unsolved (UBO)
 
-2.Performance Analysis
+2. Performance Analysis
 --------------------------------------------
 
-## 2.1 Cloth Dimension (Particle Number)
+### 2.1 Cloth Dimension (Particle Number)
 
-## 2.2 Code Quality
+### 2.2 Code Quality
 
 3.References
 --------------------------------------------
