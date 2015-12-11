@@ -100,8 +100,8 @@ function simLoop2() {
       '	float nyid = yid + nCoord.y;',
       '	if (nxid < 0.0 || nxid>(u_clothWidth-1.0) || nyid<0.0 || nyid>(u_clothWidth-1.0)) continue;',
       '	nCoord = vec2(nyid,u_clothWidth-1.0-nxid) / u_clothWidth;',
-      '	vec3 posNP = texture(u_texPos, nCoord).xyz;',
-      '	vec3 prevNP = texture(u_texPrevPos, nCoord).xyz;',
+      '	vec3 posNP = texture2D(u_texPos, nCoord).xyz;',
+      '	vec3 prevNP = texture2D(u_texPrevPos, nCoord).xyz;',
 
       '	vec3 v2 = (posNP - prevNP) / timestep;',
       '	vec3 deltaP = pos.xyz - posNP;',
@@ -155,8 +155,8 @@ function simulationCommon() {
       'vec2 coord;',
       'coord = vec2(yid,u_clothWidth-1.0-xid)*(1.0/u_clothWidth);',
       'float timestep = u_timer;',
-      ' vec4 texPos = texture(u_texPos,coord);',
-      ' vec4 texPrevPos = texture(u_texPrevPos,coord);',
+      ' vec4 texPos = texture2D(u_texPos,coord);',
+      ' vec4 texPrevPos = texture2D(u_texPrevPos,coord);',
 
       simLoop2(),
 
@@ -184,11 +184,11 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
     var fragmentShader = gl.createShader( gl.FRAGMENT_SHADER );
 
     gl.shaderSource(vertexShader, [
-       '#version 300 es',
+       //'#version 300 es',
         'precision ' + renderer.getPrecision() + ' float;',
-        'in vec4 a_position;',
-        'in vec4 a_trytry;',
-        'out vec4 v_prevpos;',
+        'attribute vec4 a_position;',
+        'attribute vec4 a_trytry;',
+        'varying vec4 v_prevpos;',
         simulationCommon(),
         'void main() {',
         '  vec4 pos = a_position;',
@@ -199,12 +199,13 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
     ].join('\n'));
 
     gl.shaderSource(fragmentShader, [
-      '#version 300 es',
+      //'#version 300 es',
       'precision ' + renderer.getPrecision() + ' float;',
-      'in vec4 v_prevpos;',
+      'varying vec4 v_prevpos;',
       'void main() {',
-        //'gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);'//TODO: error
-      '}'
+        'gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);',
+        //'gl_Color = vec4(1.0, 1.0, 1.0, 1.0);',
+      '}',
     ].join('\n'));
 
     gl.compileShader( vertexShader );
@@ -316,6 +317,10 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
         gl.uniform1i(uniforms.u_pinEdges, cfg.getEdge());
         gl.uniform4f(uniforms.u_pins, cfg.getPin1(), cfg.getPin2(), cfg.getPin3(), cfg.getPin4());//TODO: one int would be enough..change later 0000~1111
         gl.uniform4f(uniforms.u_newPinPos, usrCtrl.uniformPins[0], usrCtrl.uniformPins[1], usrCtrl.uniformPins[2], usrCtrl.uniformPins[3]);
+    },
+
+    renderPosition: function () {
+
     },
 
     setTimer: function ( timer ) {

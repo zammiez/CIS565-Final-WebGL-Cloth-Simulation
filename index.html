@@ -714,9 +714,13 @@
                     scene.remove(mesh); scene.add(mesh);
 
                     if (isWebGL2) {
-                        if (count % 2 === 0) {
+                        //if (count % 2 === 0) {
+                        if (true) {
                             gpgpu.pass(simulationShader, vbo_pos2, vbo_pos, cfg_ui, usrControl);
                             mesh.geometry = vbo_pos2;
+                            var temp = vbo_pos2;
+                            vbo_pos2 = vbo_pos;
+                            vbo_pos = temp;
                         } else {
                             gpgpu.pass(simulationShader, vbo_pos, vbo_pos2, cfg_ui, usrControl);
                             mesh.geometry = vbo_pos;
