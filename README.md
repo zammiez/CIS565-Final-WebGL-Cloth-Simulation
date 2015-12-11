@@ -25,19 +25,19 @@ WebGL 1.0 version tested successfully on Chrome(Windows), Chrome Canary (Windows
 Instructions
 --------------------------------------------
 
-## How to use
+#### How to use
 
-#### Enable WebGL 2.0
+###### Enable WebGL 2.0
 
-#### Features and GUI
+###### Features and GUI
 
-## Implementation
+#### Implementation
 
-#### Transform Feedback
+###### Transform Feedback
 
-#### Ping-ponging Texture
+###### Ping-ponging Texture
 
-#### Unsolved (UBO)
+###### Unsolved (UBO)
 
 Performance Analysis
 --------------------------------------------

@@ -62,7 +62,7 @@
             nor.x = e1.y*e2.z-e1.z*e2.y;
             nor.y = e1.z*e2.x-e1.x*e2.z;
             nor.z = e1.x*e2.y-e1.y*e2.x;
-
+            nor = normalize(nor);
             return nor;
         }
 
@@ -85,9 +85,13 @@
         if( dot(vNormal,nor2)>0.0 ) nor2 = -nor2;
         if( dot(vNormal,nor3)>0.0 ) nor3 = -nor3;
 
-        vNormal+= nor1+nor2+nor3;
+        vNormal+= nor1 +nor2 +nor3;
 
         vNormal = normalize(vNormal);
+
+        if(vUv.x<=0.5 / width||vUv.y<=0.5 / height||vUv.x>=1.0||vUv.y>=1.0) vNormal = vec3(0.0,0.0,0.0);
+
+        //gl_Normal = vNormal;
 
         gl_PointSize = pointSize;
         gl_Position = projectionMatrix * modelViewMatrix * vec4( color, 1.0 );
@@ -110,13 +114,14 @@
         if(dot(viewDir,nor)<=0.0) nor = -nor;
 
         vec3 lightDir = vec3(1.0,1.0,1.0);//TODO:light direction
+        lightDir = normalize(lightDir);
         vec3 reflDir = reflect(-lightDir,nor);
 
         float lamb = max(dot(lightDir,nor),0.0);
         float spec = 0.0;
         float amb = 0.02;
         vec3 col;
-        vec3 lightCol = vec3(0.1,0.1,0.4);
+        vec3 lightCol = vec3(0.3,0.3,0.7);
         if(lamb>0.0)
         {
         float specAngle = max(dot(reflDir,viewDir),0.0);
@@ -125,6 +130,7 @@
         
         //gl_FragColor = vec4( (vec3(0.0, 0.03, 0.05) + (texture2D( map, vUv ).xyz * 0.25)), 1.0 );
         gl_FragColor = vec4((lamb+spec+ amb)*lightCol ,1.0);
+        //gl_FragColor = vec4(nor ,1.0);
         }
     </script>
     <!-- WebGL 2 shaders -->
@@ -615,6 +621,21 @@
                     geometry.vertices.push(vertex);
                 }
                 //TODO: faces
+                for (var x = 0; x < cloth_w - 1; x++) {
+                    for (var y = 0; y < cloth_h - 1; y++) {
+
+                        var v0 = x + cloth_w * y;
+                        var v1 = x + cloth_w * y + cloth_h;
+
+                        //geometry.faces.push(new THREE.Face3(v1 + 1, v0, v1));
+                        geometry.faces.push(new THREE.Face3(v1, v0 + 1, v0));
+                        geometry.faces.push(new THREE.Face3(v1, v1 + 1, v0 + 1));
+                        //TODO: Other side
+                        geometry.faces.push(new THREE.Face3(v0 + 1, v1, v0));
+                        geometry.faces.push(new THREE.Face3(v1 + 1, v1, v0 + 1));
+                    }
+                }
+
 
                 material = new THREE.ShaderMaterial({
                     uniforms: {
@@ -635,7 +656,7 @@
                 //mesh.material = material;
                 scene.remove(mesh);
                 //scene.add(mesh);
-                mesh = new THREE.PointCloud(geometry, material);
+                mesh = new THREE.Mesh(geometry, material);
             }
         }
         function onStepSimulation(event) {
