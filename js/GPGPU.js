@@ -18,11 +18,7 @@ var GPGPU2 = function (renderer,cloth_w,cloth_h) {
 
         var sourceAttrib = source.attributes['position'];
         if (target.attributes['position'].buffer && sourceAttrib.buffer) {
-
-            //posData = new Float32Array(sourceAttrib.array);
-            
-            //gl.getBufferSubData(gl.ARRAY_BUFFER,tempData,sourceAttrib.buffer);
-            
+         
             shader.bind(posData, prevposData, cfg, usrCtrl);
             prevposData = new Float32Array(posData);
 
@@ -36,8 +32,7 @@ var GPGPU2 = function (renderer,cloth_w,cloth_h) {
 
             gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, transformFeedback);
             gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, target.attributes['position'].buffer);
-            //gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 1, target.attributes['prev_pos'].buffer);
-
+    
             gl.enable(gl.RASTERIZER_DISCARD);
             gl.beginTransformFeedback(gl.POINTS);
 
@@ -97,7 +92,6 @@ var GPGPU = function (renderer) {
 
     this.pass = function (shader, target,cfg, usrCtrl) {
 
-        //this.initVel(shader);
         shader.setCfgSettings(cfg);
         shader.setPrevVelocityTexture( prevVelTexture);
         mesh.material = shader.updateVelMat;
@@ -110,8 +104,6 @@ var GPGPU = function (renderer) {
         var a = velTexture;
         velTexture = prevVelTexture;
         prevVelTexture = a;
-
-        //renderer.render(scene, camera, target, false);
        
     };
     /*

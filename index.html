@@ -191,11 +191,9 @@
         var pinPongData;
         var roomMaterial;
         var guiStep = false;
-        //var controls;
+
         var fboParticles, rtTexturePos, rtTexturePos2, simulationShader;
 
-        //var width = getQueryValue('width', 1024);
-        //var height = getQueryValue('height', 1024);
         var pointSize = getQueryValue('pointSize', 3.0);
 
         var maxFingers = 42;
@@ -351,9 +349,9 @@
             scene.add(textMesh);
 
 
-            var sphereMaterial = new THREE.MeshLambertMaterial({ color: 0x00008B });
+            var sphereMaterial = new THREE.MeshLambertMaterial({ color: 0x00008B }); //TODO(fix): no cloth while using THREE's materails
             var sphereGeom = new THREE.SphereGeometry(0.3, 100, 100);
-            //sphereMesh = new THREE.Mesh(sphereGeom, sphereMaterial);
+
             sphereMesh = new THREE.Mesh(sphereGeom, roomMaterial);
             sphereMesh.position.x = 0.5;
             sphereMesh.position.y = 0.45;
@@ -369,7 +367,7 @@
             //https://www.script-tutorials.com/webgl-with-three-js-lesson-10/
             var testDragGeo = new THREE.SphereGeometry(0.03, 10, 10);
             var testDragMat = new THREE.MeshPhongMaterial({ color: 0xEE00EE });
-            //usrControl.testDragMesh = new THREE.Mesh(testDragGeo, testDragMat);
+            //usrControl.testDragMesh = new THREE.Mesh(testDragGeo, testDragMat);  //TODO(fix): no cloth while using THREE's materails
             usrControl.testDragMesh = new THREE.Mesh(testDragGeo, roomMaterial);
             usrControl.testDragMesh.position.x = 0.0;
             usrControl.testDragMesh.position.y = 1.0;
@@ -390,7 +388,7 @@
                 for (var y = 0; y < cloth_h; y++) {
                     data[i + 0] = x * 1.0 / cloth_w;
                     data[i + 1] = 1.0;
-                    data[i + 2] = y * 1.0 / cloth_h; //-y * 1.0 / cloth_h;
+                    data[i + 2] = y * 1.0 / cloth_h;
                     data[i + 3] = 0.1;
 
                     vtxIds[i + 0] = t;
@@ -433,22 +431,6 @@
                 mesh = new THREE.PointCloud(vbo_pos, material);
             } else {
                 //Try triangle:
-                var triangleMat = new THREE.ShaderMaterial({
-                    vertexShader: [
-                        'void main() {',
-                        //'position.x+=0.1;',
-                        '  gl_Position = projectionMatrix * modelViewMatrix * vec4( position + vec3(2.5,0.0,0.0), 1.0 );',
-                        '}',
-                    ].join('\n'),
-                    fragmentShader: [
-                        'void main() {',
-                        '  gl_FragColor = vec4(1.0,0.0,1.0,1.0);',
-                        '}',
-                    ].join('\n'),
-                });
-
-                // var triangleMesh = new THREE.Mesh(triangleGeo, triangleMat);
-                // scene.add(triangleMesh);
 
                 //WebGL 1+
                 texture = new THREE.DataTexture(data, cloth_w, cloth_h, THREE.RGBAFormat, THREE.FloatType);
@@ -514,12 +496,9 @@
                     //transparent: true
                 });
                 //WebGl 1 Mesh
-                // mesh = new THREE.PointCloud(geometry, material);//triangleMat
                 mesh = new THREE.Mesh(geometry, material);
             }
 
-
-            //mesh = new THREE.Points(vbo_pos, material);
             scene.add(mesh);
 
             window.addEventListener('start-simulation', onStartSimulation);
@@ -536,14 +515,14 @@
             var vector = new THREE.Vector3(mouseX, mouseY, 1);
             vector.unproject(camera);
             raycaster.set(camera.position, vector.sub(camera.position).normalize());
-            //var intersects = raycaster.intersectObjects(scene.children);
+
             var intersects = raycaster.intersectObjects(usrControl.pinObjects);
             if (intersects.length > 0) {
                 camControl.enabled = false;
 
                 usrControl.selection = intersects[0].object;
                 var intersects = raycaster.intersectObject(usrControl.plane);
-                usrControl.itrOffset.copy(intersects[0].point).sub(usrControl.plane.position);//???!!
+                usrControl.itrOffset.copy(intersects[0].point).sub(usrControl.plane.position);
             }
         }
         function onMouseUp(event) {
@@ -552,8 +531,7 @@
 
         }
         function onStartSimulation(event) {
-            //TODO: reset and start simulation
-            //cfg_ui.setPause(false);
+            //TODO: cfg_ui.setPause(false);
             usrControl.testDragMesh.position.x = 0.0;
             usrControl.testDragMesh.position.y = 1.0;
             usrControl.testDragMesh.position.z = 0.0;
@@ -567,7 +545,7 @@
                 for (var y = 0; y < cloth_h; y++) {
                     data[i + 0] = x * 1.0 / cloth_w;
                     data[i + 1] = 1.0;
-                    data[i + 2] = y * 1.0 / cloth_h; //-y * 1.0 / cloth_h;
+                    data[i + 2] = y * 1.0 / cloth_h;
                     data[i + 3] = 0.1;
 
                     vtxIds[i + 0] = t;
@@ -611,8 +589,6 @@
                 texture.magFilter = THREE.NearestFilter;
                 texture.needsUpdate = true;
 
-                // zz85 - fbo init
-
                 rtTexturePos = new THREE.WebGLRenderTarget(cloth_w, cloth_h, {
                     wrapS: THREE.RepeatWrapping,
                     wrapT: THREE.RepeatWrapping,
@@ -629,7 +605,7 @@
                 simulationShader = new GPGPU.SimulationShader();
                 simulationShader.setOriginsTexture(texture);
                 simulationShader.setClothDim(cloth_w);
-                //*
+
                 geometry = new THREE.Geometry();
 
                 for (var i = 0, l = cloth_w * cloth_h; i < l; i++) {
@@ -637,7 +613,8 @@
                     vertex.x = (i % cloth_w) / cloth_w;
                     vertex.y = Math.floor(i / cloth_w) / cloth_h;
                     geometry.vertices.push(vertex);
-                }//*/
+                }
+                //TODO: faces
 
                 material = new THREE.ShaderMaterial({
                     uniforms: {
@@ -679,7 +656,6 @@
 
             sphereMesh.visible = (cfg_ui.getRigid() == 0);
 
-            //*/
             if ((!cfg_ui.getPause()) || guiStep) {
                 simulationShader.setTimer(cfg_ui.getTimeStep());
 

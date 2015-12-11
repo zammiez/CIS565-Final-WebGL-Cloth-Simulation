@@ -172,10 +172,9 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
 
   function createProgram () {
 
-      //Sadly, it seems that WebGL doesn't support gl_VertexID.... T^T
+      //WebGL doesn't support gl_VertexID
       //http://max-limper.de/tech/batchedrendering.html
-
-      //well....uniform block..
+      //TODO:uniform block
       //https://www.opengl.org/wiki/Interface_Block_(GLSL)
     var vertexShader = gl.createShader( gl.VERTEX_SHADER );
     var fragmentShader = gl.createShader( gl.FRAGMENT_SHADER );
@@ -200,7 +199,7 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
       'precision ' + renderer.getPrecision() + ' float;',
       'in vec4 v_prevpos;',
       'void main() {',
-        //'gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);',??????
+        //'gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);'//TODO: error
       '}'
     ].join('\n'));
 
@@ -266,7 +265,7 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
     attributes: attributes,
 
     bind: function (tempData, prevData, cfg, usrCtrl) {
-        //!!! VBO -> Texture ?????
+        //TODO: VBO -> Texture
         //http://stackoverflow.com/questions/17262574/packing-vertex-data-into-a-webgl-texture
         //TODO: don't need to re-create texture every frame.....put those into init
         gl.useProgram(program);
@@ -311,31 +310,6 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
         
         gl.uniform4f(uniforms.u_pins, cfg.getPin1(), cfg.getPin2(), cfg.getPin3(), cfg.getPin4());
         gl.uniform4f(uniforms.u_newPinPos, usrCtrl.uniformPins[0], usrCtrl.uniformPins[1], usrCtrl.uniformPins[2], usrCtrl.uniformPins[3]);
-        /*
-        //UBO:
-        //https://www.packtpub.com/books/content/opengl-40-using-uniform-blocks-and-uniform-buffer-objects
-        //1. get index of uniform block
-        var blockIdx = gl.getUniformBlockIndex(program, "u_tryUBO");
-        //2. allocate space for buffer
-        var blockSize = gl.getActiveUniformBlockParameter(program, blockIdx, gl.UNIFORM_BLOCK_DATA_SIZE);
-        var blockBuffer = gl.createBuffer();
-        //3. Query for the offset of each variable within the block
-        var names = ["uboTry1", "uboTry2"];
-            //var indices = new Int16Array(2);
-        var indices = gl.getUniformIndices(program, names);
-        var offset = gl.getActiveUniforms(program, indices, gl.UNIFORM_OFFSET);
-        debugger;
-        //4. Place the data into buffer
-        var try1 = [0.1, 0.2, 0.3, 0.4];
-        var try2 = [0.5, 0.6, 0.7, 0.8];
-        //5. Create the OpenGL buffer object and copy data into it
-        //6. bind the buffer object to the uniform block
-        
-            'layout (std140) uniform u_tryUBO{',
-            '   vec4 uboTry1;',
-            '   vec4 uboTry2;',
-            '};',
-        */
     },
 
     setTimer: function ( timer ) {
@@ -411,7 +385,7 @@ GPGPU.SimulationShader = function () {
             getNeighbor(),
             'void main() {',
             '  vec4 pos = texture2D( tPositions, vUv );',
-            '   vec3 F = vec3(0.0,-9.8*0.1,0.0);',//mass
+            '   vec3 F = vec3(0.0,-9.8*0.1,0.0);',//TODO:mass
             addWind(),
             '   vec4 vel =  texture2D( tVelocity, vUv );',
             'F+=DAMPING*vel.xyz;',
@@ -419,24 +393,21 @@ GPGPU.SimulationShader = function () {
 /****************
 **  SIMULATION **
 *****************/
-//k=2: up
+
       'for (int k = 0; k < 12; k++)',
       '{',
       ' vec3 tempVel = vel.xyz;',
       ' float ks, kd;',
       '	vec2 nCoord = getNeighbor(k, ks, kd);',
 
-      '	float inv_cloth_size = 1.0 / cloth_w;',//LATER
+      '	float inv_cloth_size = 1.0 / cloth_w;',
       '	float rest_length = length(nCoord*inv_cloth_size);',
 
-      '	nCoord *=(1.0/cloth_w);',//LATER
+      '	nCoord *=(1.0/cloth_w);',
       ' vec2 newCoord = vUv+nCoord;',
       ' if( '+ boarderCondition() +') continue;',
 
       '	vec3 posNP = texture2D( tPositions, newCoord).xyz;',
-      //'	vec3 prevNP = texture(u_texPrevPos, nCoord).xyz;',
-
-      //'	vec3 v2 = (posNP - prevNP) / timestep;',
       '	vec3 v2 = texture2D( tVelocity, newCoord ).xyz;',
       '	vec3 deltaP = pos.xyz - posNP;',
 
@@ -451,10 +422,9 @@ GPGPU.SimulationShader = function () {
       '};',
 /****************
 *****************/
-            '   vec3 acc = F/0.1;',//mass
-            'if('+pinCondition()+') vel.xyz = vec3(0.0);else  vel.xyz += acc*timestep;', //MARK
+            '   vec3 acc = F/0.1;',//TODO:mass
+            'if('+pinCondition()+') vel.xyz = vec3(0.0);else  vel.xyz += acc*timestep;',
             '   gl_FragColor = vec4(vel.xyz,1.0);',
-            //'  gl_FragColor = vec4(0.2,-0.2,0.0,1.0);',
             '}',
         ].join('\n'),
     });
@@ -501,7 +471,7 @@ GPGPU.SimulationShader = function () {
           '     pos = vec4(texture2D( origin, vUv ).xyz, 0.1);',
           '}',
           'else{',
-                'if('+pinCondition()+') ; else pos.xyz+=vel.xyz*timer;',//MARK
+                'if('+pinCondition()+') ; else pos.xyz+=vel.xyz*timer;',
                 'if(u_rigid==0) sphereCollision(pos.xyz,vec3(0.5,0.45,0.4),0.3);',
           '}',
 
