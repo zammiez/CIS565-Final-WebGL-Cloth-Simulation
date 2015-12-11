@@ -263,6 +263,12 @@
 
         function init() {
             container = document.createElement('div');
+            stats = new Stats();
+            stats.domElement.style.position = 'absolute';
+            stats.domElement.style.left = '10px';
+            stats.domElement.style.top = '0px';
+            container.appendChild(stats.domElement);
+
             document.body.appendChild(container);
 
             canvas = document.createElement('canvas');
@@ -676,6 +682,8 @@
 
             requestAnimationFrame(render);
 
+            stats.begin();
+
             sphereMesh.visible = (cfg_ui.getRigid() == 0);
 
             if ((!cfg_ui.getPause()) || guiStep) {
@@ -712,6 +720,7 @@
 
             camControl.update();
             renderer.render(scene, camera);
+            stats.end();
         }
 
         cfg_ui = new UI_cfg();
