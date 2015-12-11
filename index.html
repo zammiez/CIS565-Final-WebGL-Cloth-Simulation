@@ -37,6 +37,7 @@
     <script src="js/GPGPU.js"></script>
     <script src="js/GeometryUtils.js"></script>
     <script src="js/gpgpu/SimulationShader.js"></script>
+    <script src="lib/stats.min.js"></script>
     <script src="lib/OrbitControls.js"></script>
     <script src="js/leap-0.6.4.min.js"></script>
     <script src="js/leap-plugins-0.1.6.1.js"></script>
@@ -81,15 +82,15 @@
         vec3 nor2 = calcNormal(color,down,left);
         vec3 nor3 = calcNormal(color,right,up);
 
-        if( dot(vNormal,nor1)>0.0 ) nor1 = -nor1;
-        if( dot(vNormal,nor2)>0.0 ) nor2 = -nor2;
-        if( dot(vNormal,nor3)>0.0 ) nor3 = -nor3;
+        if( dot(vNormal,nor1)<=0.0 ) nor1 = -nor1;
+        if( dot(vNormal,nor2)<=0.0 ) nor2 = -nor2;
+        if( dot(vNormal,nor3)<=0.0 ) nor3 = -nor3;
 
         vNormal+= nor1 +nor2 +nor3;
 
         vNormal = normalize(vNormal);
 
-        if(vUv.x<=0.5 / width||vUv.y<=0.5 / height||vUv.x>=1.0||vUv.y>=1.0) vNormal = vec3(0.0,0.0,0.0);
+        if(vUv.x<=0.5 / width||vUv.y<=0.5 / height||vUv.x>=1.0||vUv.y>=1.0) vNormal = vec3(0.0,0.0,0.0); //TODO: boarder
 
         //gl_Normal = vNormal;
 
@@ -177,7 +178,7 @@
 
         var tempTex1, tempTex2;
 
-        var container, canvas, gl;
+        var container, canvas, gl,stats;
 
         var timer = 0;
         var count = 0;

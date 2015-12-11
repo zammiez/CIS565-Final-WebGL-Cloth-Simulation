@@ -27,9 +27,9 @@ Instructions
 
 #### How to use
 
-###### Enable WebGL 2.0
+##### Enable WebGL 2.0
 
-###### Features
+##### Features
 
 * WebGL 1.0 & WebGL 2.0
 
@@ -40,13 +40,13 @@ Otherwise, if the browser supports WebGL 2.0, there would be "WebGL 2 Cloth Simu
 |:-------------------------:|:-------------------:
 |![](Image/WebGL1.PNG)		|![](Image/WebGL2.PNG)
 
-* Basic Animation Control
+* Settings and Basic Animation Control
 
-![](Image/AnimationControl.PNG)
+![](Image/Settings.PNG)|![](Image/AnimationControl.PNG)
 
 * Interactions
 
-*** RigidBody
+** RigidBody
 
 ![](Image/RigidControl.PNG)
 
@@ -56,11 +56,11 @@ Cloth-Rigidbody collision is more stable in WebGL2 implementation than in WebGL1
 |:-------------------------:|:-------------------:
 |![](Image/Rigid1.PNG)		|![](Image/Rigid2.PNG)
 
-*** Wind
+** Wind
 
 TODO: add pic here
 
-*** Pins
+** Pins
 
 ![](Image/Pins.PNG)
 
@@ -68,11 +68,11 @@ TODO: movable pin gif.
 
 #### Implementation
 
-###### Transform Feedback
+##### Transform Feedback
 
-###### Ping-ponging Texture
+##### Ping-ponging Texture
 
-###### Unsolved (UBO)
+##### Unsolved (UBO)
 
 Performance Analysis
 --------------------------------------------
