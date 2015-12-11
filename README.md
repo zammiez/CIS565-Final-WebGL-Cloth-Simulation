@@ -20,7 +20,7 @@ WebGL 2.0 version tested successfully on Chrome(Windows), Chrome Canary (Windows
 
 WebGL 1.0 version tested successfully on Chrome(Windows), Chrome Canary (Windows), FireFox (Windows)
 
-![](Image/image.PNG)
+TODO: Use another pic
 
 1. Instructions
 --------------------------------------------
@@ -33,27 +33,27 @@ WebGL 1.0 version tested successfully on Chrome(Windows), Chrome Canary (Windows
 
 * **WebGL 1.0 & WebGL 2.0**
 
-If the project is running on browser that supports only WebGL 1.0, there would be a "WebGL Cloth Simulaiton" object in the scene.
+	If the project is running on browser that supports only WebGL 1.0, there would be a "WebGL Cloth Simulaiton" object in the scene.
 Otherwise, if the browser supports WebGL 2.0, there would be "WebGL 2 Cloth Simulation" instead and the simulation is using transform feedback.
 
-|WebGL 1.0 ScreenShot		|WebGL 2.0 ScreenShot
-|:-------------------------:|:-------------------:
-|![](Image/WebGL1.PNG)		|![](Image/WebGL2.PNG)
+	|WebGL 1.0 ScreenShot		|WebGL 2.0 ScreenShot
+	|:-------------------------:|:-------------------:
+	|![](Image/WebGL1.PNG)		|![](Image/WebGL2.PNG)
 
 * **Settings and Basic Animation Control**
 
 	![](Image/Settings.PNG)|![](Image/AnimationControl.PNG)
 
-	* Render Mode
+	* **Render Mode**
 
-	|Points						|Triangle
-	|:-------------------------:|:-------------------:
-	|![](Image/SettingPoint.PNG)|![](Image/SettingTri.PNG)
-	|![](Image/Points.PNG)		|![](Image/Triangles.PNG)
+		|Points						|Triangle
+		|:-------------------------:|:-------------------:
+		|![](Image/SettingPoint.PNG)|![](Image/SettingTri.PNG)
+		|![](Image/Points.PNG)		|![](Image/Triangles.PNG)
 
 * **Interactions**
 
-	* RigidBody
+	* **RigidBody**
 
 	  ![](Image/RigidControl.PNG)
 
@@ -63,17 +63,18 @@ Otherwise, if the browser supports WebGL 2.0, there would be "WebGL 2 Cloth Simu
 	  |:-------------------------:|:-------------------:
 	  |![](Image/Rigid1.PNG)		|![](Image/Rigid2.PNG)
 
-	* Wind
+	* **Wind**
 
 	  TODO: add pic here
 
-	* Pins
-	There are two kinds of pins: pin points and pin edges. Select them under Interaction_Folder->Edges or ->Pins
-	![](Image/pinEdge.PNG)
+	* **Pins**
 
-	WebGL 2 version is supporting movable pin.
+	  There are two kinds of pins: pin points and pin edges. Select them under Interaction_Folder->Edges or ->Pins
+	  ![](Image/pinEdge.PNG)
 
-	TODO: movable pin gif.
+	  WebGL 2 version is supporting movable pin.
+
+	  TODO: movable pin gif.
 
 ### 1.2 Implementation
 
