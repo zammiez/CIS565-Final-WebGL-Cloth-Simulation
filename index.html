@@ -77,20 +77,28 @@
         vec3 left = texture2D( map, vUv + vec2(-1.0/width) ).rgb;
         vec3 right = texture2D( map, vUv + vec2(1.0/width)).rgb;
         
-        vNormal =  calcNormal(color,up,right);
+        vNormal = vec3(0.0,0.0,0.0); 
+        vec3 nor0 =  calcNormal(color,up,right);
         vec3 nor1 = calcNormal(color,right,down);
         vec3 nor2 = calcNormal(color,down,left);
         vec3 nor3 = calcNormal(color,right,up);
 
-        if( dot(vNormal,nor1)<=0.0 ) nor1 = -nor1;
-        if( dot(vNormal,nor2)<=0.0 ) nor2 = -nor2;
-        if( dot(vNormal,nor3)<=0.0 ) nor3 = -nor3;
+        if( dot(nor0,nor1)<=0.0 ) nor1 = -nor1;
+        if( dot(nor0,nor2)<=0.0 ) nor2 = -nor2;
+        if( dot(nor0,nor3)<=0.0 ) nor3 = -nor3;
 
-        vNormal+= nor1 +nor2 +nor3;
+        vNormal+= nor0 + nor1 +nor2 +nor3;
+
+        vec3 norStand;
+        /*
+        if(vUv.x<=0.5/width)    norStand = vec3(0.0,0.0,0.0);        //Left Edge
+        if(vUv.y<=0.5 / height) vNormal = vec3(0.0,0.0,0.0);        //Top Edge 
+        if(vUv.x>=1.0)          vNormal = vec3(0.0,0.0,0.0);        //Bottom Edge                                         
+        if(vUv.y>=1.0)          vNormal = vec3(0.0,0.0,0.0);        //Right Edge  
+        */
+        if(vUv.x<=0.5 / width||vUv.y<=0.5 / height||vUv.x>=1.0-0.5/width||vUv.y>=1.0 - 0.5/width) vNormal = vec3(0.0,0.0,0.0); //TODO: boarder
 
         vNormal = normalize(vNormal);
-
-        if(vUv.x<=0.5 / width||vUv.y<=0.5 / height||vUv.x>=1.0||vUv.y>=1.0) vNormal = vec3(0.0,0.0,0.0); //TODO: boarder
 
         //gl_Normal = vNormal;
 
@@ -509,7 +517,8 @@
                     //transparent: true
                 });
                 //WebGl 1 Mesh
-                mesh = new THREE.Mesh(geometry, material);
+                //mesh = new THREE.Mesh(geometry, material);
+                mesh = new THREE.PointCloud(geometry, material);
             }
 
             scene.add(mesh);
@@ -663,7 +672,12 @@
                 //mesh.material = material;
                 scene.remove(mesh);
                 //scene.add(mesh);
-                mesh = new THREE.Mesh(geometry, material);
+                //mesh = new THREE.Mesh(geometry, material);
+                if (cfg_ui.getRenderMode() == 0 ) 
+                    mesh = new THREE.PointCloud(geometry, material);
+                else if (cfg_ui.getRenderMode() == 1 ) {
+                    mesh = new THREE.Mesh(geometry, material);
+                }
             }
         }
         function onStepSimulation(event) {
@@ -687,6 +701,7 @@
             sphereMesh.visible = (cfg_ui.getRigid() == 0);
 
             if ((!cfg_ui.getPause()) || guiStep) {
+
                 simulationShader.setTimer(cfg_ui.getTimeStep());
 
                 if (count > 20 && !isWebGL2) simulationShader.setStart(0);
