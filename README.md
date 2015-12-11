@@ -13,12 +13,13 @@ Cloth Simulation using transform feedback for WebGL 2.0 supported browsers and p
 
 **Using [Brandon Jones](https://github.com/toji)'s [WebGL 2 Particle Simulation](https://github.com/toji/webgl2-particles) as framework.**
 
-* Live Demo: View online at http://zammiez.github.io/CIS565-Final-WebGL-Cloth-Simulation/
-* Video Demo: [TODO: youtube]()
+* [Live Demo](http://zammiez.github.io/CIS565-Final-WebGL-Cloth-Simulation/)
+* [Video Demo](https://www.youtube.com/watch?v=4LcZuiO5xKU&feature=youtu.be)
+* [Final Presentation Slides](https://docs.google.com/a/seas.upenn.edu/presentation/d/1azaTshN9id6mygkEYDAcntXlHf8WixpvsSFgzbcu8_0/edit?usp=sharing)
 
-WebGL 2.0 version tested successfully on Chrome(Windows), Chrome Canary (Windows).
+WebGL 2.0 version tested successfully on Chrome(Windows), Chrome Canary (Windows), FireFox(Mac)
 
-WebGL 1.0 version tested successfully on Chrome(Windows), Chrome Canary (Windows), FireFox (Windows)
+WebGL 1.0 version tested successfully on Chrome(Windows,Mac), Chrome Canary (Windows), FireFox (Windows)
 
 TODO: Use another pic
 
@@ -28,6 +29,8 @@ TODO: Use another pic
 ### 1.1 How to use
 
 #### 1.1.1 Enable WebGL 2.0
+
+Follow the instruction from [Webgl wiki](https://www.khronos.org/webgl/wiki/Getting_a_WebGL_Implementation)
 
 #### 1.1.2 Features
 
@@ -89,7 +92,11 @@ Otherwise, if the browser supports WebGL 2.0, there would be "WebGL 2 Cloth Simu
 
 #### Mass-Spring Cloth Simulation
 
-#### Unsolved (UBO)
+#### Unsolved
+
+* **Different Browsers**
+
+* **Uniform Buffer Object**
 
 2. Performance Analysis
 --------------------------------------------
@@ -119,6 +126,10 @@ Either way, a smaller timestep is always needed to ensure a stable system.
 |![](Image/100deltT001.PNG)	|![](Image/100deltT003.PNG)	
 
 ### 2.2 Code Quality
+
+* WebGL1 version is simulating within fragment shader. Most of the code are through Three.js shaderMaterial. 
+WebGL2 version is using transform feedback and doing the simulation in the Vertex Shader. Thus, there are more OpenGL codes and operations.
+This makes the WebGL1 version's code more readable and compact.
 
 3.References
 --------------------------------------------
