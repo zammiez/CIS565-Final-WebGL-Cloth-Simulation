@@ -15,6 +15,8 @@ function commonUniforms() {
         'uniform vec2 Str;',
         'uniform vec2 Shr;',
         'uniform vec2 Bnd;',
+        'uniform vec4 u_pins;',
+
     ].join('\n');
 }
 
@@ -123,10 +125,9 @@ function simulationCommon() {
         'uniform float u_timer;',
         'uniform float u_clothWidth;',
         'uniform float u_clothHeight;',
+        'uniform vec4 u_newPinPos;',
         //'uniform float mass;',
         commonUniforms(),
-        'uniform vec4 u_pins;',
-        'uniform vec4 u_newPinPos;',
 
         'uniform sampler2D u_texPos;',
         'uniform sampler2D u_texPrevPos;',
@@ -308,7 +309,7 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
         gl.uniform2f(uniforms.Shr, cfg.getKsShear(), -cfg.getKdShear());
         gl.uniform2f(uniforms.Bnd, cfg.getKsBend(), -cfg.getKdBend());
         
-        gl.uniform4f(uniforms.u_pins, cfg.getPin1(), cfg.getPin2(), cfg.getPin3(), cfg.getPin4());
+        gl.uniform4f(uniforms.u_pins, cfg.getPin1(), cfg.getPin2(), cfg.getPin3(), cfg.getPin4());//TODO: one int would be enough..change later
         gl.uniform4f(uniforms.u_newPinPos, usrCtrl.uniformPins[0], usrCtrl.uniformPins[1], usrCtrl.uniformPins[2], usrCtrl.uniformPins[3]);
     },
 
@@ -325,9 +326,16 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
 **      WebGL1       **
 **********************/
 
-function pinCondition() {
-    return ['(vUv.y <(2.0/cloth_w)||vUv.y>(1.0-2.0/cloth_w)) && vUv.x<(2.0/cloth_w)'].join('');
+function isPin() {
+    return [
+        'pinBoolean = ((vUv.y>(1.0-2.0/cloth_w)) && vUv.x<(2.0/cloth_w)) &&(u_pins.x>0.0);',//Pin1
+        'if(!pinBoolean) pinBoolean = (vUv.y <(2.0/cloth_w) && vUv.x<(2.0/cloth_w) && u_pins.y>0.0);',//Pin2
+        'if(!pinBoolean) pinBoolean = (vUv.y >(1.0-2.0/cloth_w) && vUv.x>(1.0-2.0/cloth_w) && u_pins.z>0.0);',//Pin3
+        'if(!pinBoolean) pinBoolean = (vUv.y <(2.0/cloth_w) && vUv.x>(1.0-2.0/cloth_w) && u_pins.w>0.0);',//Pin4
+
+    ].join('\n');
 }
+
 function boarderCondition() {
     return ['newCoord.x<=0.0 || newCoord.x>=1.0 || newCoord.y<=0.0 || newCoord.y>=1.0'].join('');
 }
@@ -354,7 +362,7 @@ GPGPU.SimulationShader = function () {
 
     var updateVelMat = new THREE.ShaderMaterial({
 
-        uniforms: {
+        uniforms: {        
             u_rigid: { type: "i", value: -1 },
             cloth_w: { type: "f", value: 50.0 },
             tVelocity: { type: "t", value: texture },
@@ -364,6 +372,7 @@ GPGPU.SimulationShader = function () {
             Str: { type: "v2", value: new THREE.Vector2(850.0, -0.25) },
             Shr: { type: "v2", value: new THREE.Vector2(850.0, -0.25) },
             Bnd: { type: "v2", value: new THREE.Vector2(2550.0, -0.25) },
+            u_pins: { type: "v4", value: new THREE.Vector4(1.0, 1.0, 0.0, 0.0) },
         },
 
         vertexShader: [
@@ -423,7 +432,9 @@ GPGPU.SimulationShader = function () {
 /****************
 *****************/
             '   vec3 acc = F/0.1;',//TODO:mass
-            'if('+pinCondition()+') vel.xyz = vec3(0.0);else  vel.xyz += acc*timestep;',
+            'bool pinBoolean;',
+            isPin(),
+            'if(pinBoolean) vel.xyz = vec3(0.0);else  vel.xyz += acc*timestep;',
             '   gl_FragColor = vec4(vel.xyz,1.0);',
             '}',
         ].join('\n'),
@@ -438,6 +449,8 @@ GPGPU.SimulationShader = function () {
             origin: { type: "t", value: texture },
             timer: { type: "f", value: 0.003 },
             isStart: { type: "i", value: 1 },
+            u_pins: { type: "v4", value: new THREE.Vector4(1.0, 1.0, 0.0, 0.0) },
+            u_newPinPos: { type: "v4", value: new THREE.Vector4(0.0, 0.0, 0.0, 0.0) },
         },
 
         vertexShader: [
@@ -461,6 +474,8 @@ GPGPU.SimulationShader = function () {
           'uniform float timer;',
           'uniform int isStart;',
 
+          'uniform vec4 u_pins;',
+          'uniform vec4 u_newPinPos;',
           sphereCollision(),
           //getNeighbor(),
           'void main() {',
@@ -471,8 +486,10 @@ GPGPU.SimulationShader = function () {
           '     pos = vec4(texture2D( origin, vUv ).xyz, 0.1);',
           '}',
           'else{',
-                'if('+pinCondition()+') ; else pos.xyz+=vel.xyz*timer;',
-                'if(u_rigid==0) sphereCollision(pos.xyz,vec3(0.5,0.45,0.4),0.3);',
+           '    bool pinBoolean;',
+           isPin(),
+           '    if( pinBoolean) ; else pos.xyz+=vel.xyz*timer;',
+           '    if(u_rigid==0) sphereCollision(pos.xyz,vec3(0.5,0.45,0.4),0.3);',
           '}',
 
           '  gl_FragColor = pos;',
@@ -490,12 +507,14 @@ GPGPU.SimulationShader = function () {
 
         setCfgSettings: function (cfg) {
             material.uniforms.u_rigid.value = cfg.getRigid();
+            material.uniforms.u_pins.value = new THREE.Vector4(cfg.getPin1(), cfg.getPin2(), cfg.getPin3(), cfg.getPin4());//TODO: same as above
             updateVelMat.uniforms.u_rigid.value = cfg.getRigid();
             updateVelMat.uniforms.timestep.value = cfg.getTimeStep();
             updateVelMat.uniforms.Str.value = new THREE.Vector2(cfg.getKsString(), -cfg.getKdString());
             updateVelMat.uniforms.Shr.value = new THREE.Vector2(cfg.getKsShear(), -cfg.getKdShear());
             updateVelMat.uniforms.Bnd.value = new THREE.Vector2(cfg.getKsBend(), -cfg.getKdBend());
             updateVelMat.uniforms.u_wind.value = cfg.getWindForce();
+            updateVelMat.uniforms.u_pins.value = new THREE.Vector4(cfg.getPin1(), cfg.getPin2(), cfg.getPin3(), cfg.getPin4());//TODO: same as above
         },
 
         setPositionsTexture: function (positions) {           
