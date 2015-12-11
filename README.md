@@ -102,16 +102,16 @@ Cloth Dimension could also effect simulation results.
 When the mass of single cloth particle is constant. Same set of string parameters could turn into different cloth behavior with differenct particle counts.
 Below are clothes with 20*20, 50*50, 100*100 and 150*150 particles respectively and they are simulated with the same set of settings. 
 
-	  |20*20				|50*50					|100*100				|150*150
-	  |:-------------------:|:---------------------:|:---------------------:|:---------------------:
-	  |![](Image/com20.PNG)	|![](Image/com50.PNG)	|![](Image/com100.PNG)	|![](Image/com150.PNG)
+|20*20				|50*50					|100*100				|150*150
+|:-------------------:|:---------------------:|:---------------------:|:---------------------:
+|![](Image/com20.PNG)	|![](Image/com50.PNG)	|![](Image/com100.PNG)	|![](Image/com150.PNG)
 
 To get the same simulation result as cloth with lower particle count, we need to decrease the value of single particle mass, or increase the value of string parameters.
 Either way, a smaller timestep is always needed to ensure a stable system.
 
-	  |timestep:0.001				|timestep:0.001			
-	  |:---------------------------:|:-------------------------:
-	  |![](Image/100deltT001.PNG)	|![](Image/100deltT003.PNG)	
+|timestep:0.001				|timestep:0.001			
+|:---------------------------:|:-------------------------:
+|![](Image/100deltT001.PNG)	|![](Image/100deltT003.PNG)	
 
 ### 2.2 Code Quality
 
