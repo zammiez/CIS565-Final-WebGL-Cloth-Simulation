@@ -25,11 +25,11 @@ WebGL 1.0 version tested successfully on Chrome(Windows), Chrome Canary (Windows
 1.Instructions
 --------------------------------------------
 
-#### 1.1 How to use
+## 1.1 How to use
 
-##### 1.1.1 Enable WebGL 2.0
+#### 1.1.1 Enable WebGL 2.0
 
-##### 1.1.2 Features
+#### 1.1.2 Features
 
 * **WebGL 1.0 & WebGL 2.0**
 
@@ -54,7 +54,7 @@ Otherwise, if the browser supports WebGL 2.0, there would be "WebGL 2 Cloth Simu
 
 * **Interactions**
 
-* * (1) RigidBody
+	* (1) RigidBody
 
 ![](Image/RigidControl.PNG)
 
@@ -74,20 +74,20 @@ TODO: add pic here
 
 TODO: movable pin gif.
 
-#### 1.2 Implementation
+## 1.2 Implementation
 
-##### Transform Feedback
+#### Transform Feedback
 
-##### Ping-ponging Texture
+#### Ping-ponging Texture
 
-##### Unsolved (UBO)
+#### Unsolved (UBO)
 
 2.Performance Analysis
 --------------------------------------------
 
-#### 2.1 Cloth Dimension (Particle Number)
+## 2.1 Cloth Dimension (Particle Number)
 
-#### 2.2 Code Quality
+## 2.2 Code Quality
 
 3.References
 --------------------------------------------
