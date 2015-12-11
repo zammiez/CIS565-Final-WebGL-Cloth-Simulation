@@ -13,7 +13,7 @@ Cloth Simulation using transform feedback for WebGL 2.0 supported browsers and p
 
 **Using [Brandon Jones](https://github.com/toji)'s [WebGL 2 Particle Simulation](https://github.com/toji/webgl2-particles) as framework.**
 
-* Live Demo: View online at [TODO:***]()
+* Live Demo: View online at http://zammiez.github.io/CIS565-Final-WebGL-Cloth-Simulation/
 * Video Demo: [TODO: youtube]()
 
 WebGL 2.0 version tested successfully on Chrome(Windows), Chrome Canary (Windows).
