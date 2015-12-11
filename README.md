@@ -21,7 +21,7 @@ WebGL 2.0 version tested successfully on Chrome(Windows), Chrome Canary (Windows
 
 WebGL 1.0 version tested successfully on Chrome(Windows,Mac), Chrome Canary (Windows), FireFox (Windows)
 
-TODO: Use another pic
+![](Image/Overview.PNG)	
 
 1. Instructions
 --------------------------------------------
@@ -30,7 +30,7 @@ TODO: Use another pic
 
 #### 1.1.1 Enable WebGL 2.0
 
-Follow the instruction from [Webgl wiki](https://www.khronos.org/webgl/wiki/Getting_a_WebGL_Implementation)
+Follow the instruction from [WebGL Wiki](https://www.khronos.org/webgl/wiki/Getting_a_WebGL_Implementation) to enable your browser with WebGL2.
 
 #### 1.1.2 Features
 
