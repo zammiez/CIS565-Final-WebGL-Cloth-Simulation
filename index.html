@@ -701,40 +701,45 @@
             sphereMesh.visible = (cfg_ui.getRigid() == 0);
 
             if ((!cfg_ui.getPause()) || guiStep) {
+                var ii = cfg_ui.getSpeedUp();
+                while(ii>0){
+                    ii--;
+                    simulationShader.setTimer(cfg_ui.getTimeStep());
 
-                simulationShader.setTimer(cfg_ui.getTimeStep());
+                    if (count > 20 && !isWebGL2) simulationShader.setStart(0);
 
-                if (count > 20 && !isWebGL2) simulationShader.setStart(0);
+                    timer += 1;
 
-                timer += 1;
+                    // Ugly hack to make the particle mesh always draw last
+                    scene.remove(mesh); scene.add(mesh);
 
-                // Ugly hack to make the particle mesh always draw last
-                scene.remove(mesh); scene.add(mesh);
-
-                if (isWebGL2) {
-                    if (count % 2 === 0) {
-                        gpgpu.pass(simulationShader, vbo_pos2, vbo_pos, cfg_ui, usrControl);
-                        mesh.geometry = vbo_pos2;
+                    if (isWebGL2) {
+                        if (count % 2 === 0) {
+                            gpgpu.pass(simulationShader, vbo_pos2, vbo_pos, cfg_ui, usrControl);
+                            mesh.geometry = vbo_pos2;
+                        } else {
+                            gpgpu.pass(simulationShader, vbo_pos, vbo_pos2, cfg_ui, usrControl);
+                            mesh.geometry = vbo_pos;
+                        }
                     } else {
-                        gpgpu.pass(simulationShader, vbo_pos, vbo_pos2, cfg_ui, usrControl);
-                        mesh.geometry = vbo_pos;
+                        simulationShader.setPositionsTexture(rtTexturePos);
+                        if (count < 15)
+                            gpgpu.initVel(simulationShader);
+                        gpgpu.pass(simulationShader, rtTexturePos2, cfg_ui, usrControl);
+                        material.uniforms.map.value = rtTexturePos;
+                        var a = rtTexturePos;
+                        rtTexturePos = rtTexturePos2;
+                        rtTexturePos2 = a;
                     }
-                } else {
-                    simulationShader.setPositionsTexture(rtTexturePos);
-                    if (count < 15)
-                        gpgpu.initVel(simulationShader);
-                    gpgpu.pass(simulationShader, rtTexturePos2, cfg_ui, usrControl);
-                    material.uniforms.map.value = rtTexturePos;
-                    var a = rtTexturePos;
-                    rtTexturePos = rtTexturePos2;
-                    rtTexturePos2 = a;
+                    count++;
+                    guiStep = !guiStep;
                 }
-                count++;
-                guiStep = !guiStep;
             }
 
             camControl.update();
+
             renderer.render(scene, camera);
+
             stats.end();
         }
 

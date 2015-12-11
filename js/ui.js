@@ -3,6 +3,7 @@ var UI_cfg = function () {
 
     var controls = {
         gui: null,
+        "Speed Up": 1,
         "Render": 0,
         "Material":0,
 
@@ -125,6 +126,11 @@ var UI_cfg = function () {
     this.setPause = function (value) {
         controls['pause'] = value;
     }
+
+    this.getSpeedUp = function () {
+        return controls['Speed Up'];
+    }
+
     this.init = function () {
         //cfg = new Cfg();
 
@@ -177,6 +183,7 @@ var UI_cfg = function () {
         Action_Folder.add(controls, "start");
         Action_Folder.add(controls, "pause");
         Action_Folder.add(controls, "step");
+        Action_Folder.add(controls, "Speed Up").step(1);
 
         Action_Folder.open();
 
