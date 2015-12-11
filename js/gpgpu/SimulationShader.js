@@ -62,14 +62,16 @@ function getNeighbor() {
 function sphereCollision()
 {
     return [
-        'void sphereCollision(inout vec3 x, vec3 center, float r)',
+        'bool sphereCollision(inout vec3 x, vec3 center, float r)',
         '{',
         '   r *= 1.01;',
 	    '   vec3 delta = x - center;',
         '   float dist = length(delta);',
         '   if (dist < r) {',
         '       x = center + delta*(r / dist);',
+        '       return true;',
         '   }',
+        '   return false;',
         '} ',
     ].join('\n');
 }
@@ -417,6 +419,7 @@ GPGPU.SimulationShader = function () {
             commonUniforms(),
             'float DAMPING = -0.0125;',
             getNeighbor(),
+            sphereCollision(),
             'void main() {',
             '  vec4 pos = texture2D( tPositions, vUv );',
             '   vec3 F = vec3(0.0,-9.8*0.1,0.0);',//TODO:mass
@@ -457,9 +460,12 @@ GPGPU.SimulationShader = function () {
 /****************
 *****************/
             '   vec3 acc = F/0.1;',//TODO:mass
+            'bool sphereCol = false;',
+            'if(u_rigid==0) sphereCol = sphereCollision(pos.xyz,vec3(0.5,0.45,0.4),0.28);',
             'bool pinBoolean = false;',
             isPin(),
             'if(pinBoolean) vel.xyz = vec3(0.0);else  vel.xyz += acc*timestep;',
+            //'if(sphereCol) vel.xyz*=0.95;',//TODO: direction
             '   gl_FragColor = vec4(vel.xyz,1.0);',
             '}',
         ].join('\n'),

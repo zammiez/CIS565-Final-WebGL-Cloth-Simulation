@@ -6,7 +6,7 @@ by: [Ziwei Zong](https://www.ziweizong.com)
 * LinkedIn: [Ziwei Zong](https://www.linkedin.com/in/ziweizong)
 * Twitter:  [@zzammie_zz](https://twitter.com/zammie_zz)
 
-Overview
+0.Overview
 --------------------------------------------
 
 Cloth Simulation using transform feedback for WebGL 2.0 supported browsers and ping-ponging texture method for browsers only supporting WebGL 1.0.
@@ -22,16 +22,16 @@ WebGL 1.0 version tested successfully on Chrome(Windows), Chrome Canary (Windows
 
 ![](Image/image.PNG)
 
-Instructions
+1.Instructions
 --------------------------------------------
 
-#### How to use
+#### 1.1 How to use
 
-##### Enable WebGL 2.0
+##### 1.1.1 Enable WebGL 2.0
 
-##### Features
+##### 1.1.2 Features
 
-* WebGL 1.0 & WebGL 2.0
+* **WebGL 1.0 & WebGL 2.0**
 
 If the project is running on browser that supports only WebGL 1.0, there would be a "WebGL Cloth Simulaiton" object in the scene.
 Otherwise, if the browser supports WebGL 2.0, there would be "WebGL 2 Cloth Simulation" instead and the simulation is using transform feedback.
@@ -40,13 +40,21 @@ Otherwise, if the browser supports WebGL 2.0, there would be "WebGL 2 Cloth Simu
 |:-------------------------:|:-------------------:
 |![](Image/WebGL1.PNG)		|![](Image/WebGL2.PNG)
 
-* Settings and Basic Animation Control
+* **Settings and Basic Animation Control**
 
 ![](Image/Settings.PNG)|![](Image/AnimationControl.PNG)
 
-* Interactions
+(1) Render Mode
 
-** RigidBody
+|Points						|Triangle
+|:-------------------------:|:-------------------:
+|![](Image/SettingPoint.PNG)|![](Image/SettingTri.PNG)
+|:-------------------------:|:-------------------:
+|![](Image/Points.PNG)		|![](Image/Triangles.PNG)
+
+* **Interactions**
+
+* * (1) RigidBody
 
 ![](Image/RigidControl.PNG)
 
@@ -56,17 +64,17 @@ Cloth-Rigidbody collision is more stable in WebGL2 implementation than in WebGL1
 |:-------------------------:|:-------------------:
 |![](Image/Rigid1.PNG)		|![](Image/Rigid2.PNG)
 
-** Wind
+(2) Wind
 
 TODO: add pic here
 
-** Pins
+(3) Pins
 
 ![](Image/Pins.PNG)
 
 TODO: movable pin gif.
 
-#### Implementation
+#### 1.2 Implementation
 
 ##### Transform Feedback
 
@@ -74,12 +82,12 @@ TODO: movable pin gif.
 
 ##### Unsolved (UBO)
 
-Performance Analysis
+2.Performance Analysis
 --------------------------------------------
 
-#### Cloth Dimension (Particle Number)
+#### 2.1 Cloth Dimension (Particle Number)
 
-#### Code Quality
+#### 2.2 Code Quality
 
-References
+3.References
 --------------------------------------------
