@@ -29,7 +29,42 @@ Instructions
 
 ###### Enable WebGL 2.0
 
-###### Features and GUI
+###### Features
+
+* WebGL 1.0 & WebGL 2.0
+
+If the project is running on browser that supports only WebGL 1.0, there would be a "WebGL Cloth Simulaiton" object in the scene.
+Otherwise, if the browser supports WebGL 2.0, there would be "WebGL 2 Cloth Simulation" instead and the simulation is using transform feedback.
+
+|WebGL 1.0 ScreenShot		|WebGL 2.0 ScreenShot
+|:-------------------------:|:-------------------:
+|![](Image/WebGL1.PNG)		|![](Image/WebGL2.PNG)
+
+* Basic Animation Control
+
+![](Image/AnimationControl.PNG)
+
+* Interactions
+
+*** RigidBody
+
+![](Image/RigidControl.PNG)
+
+Cloth-Rigidbody collision is more stable in WebGL2 implementation than in WebGL1.
+
+|WebGL 1.0 Rigidbody		|WebGL 2.0 Rigidbody 
+|:-------------------------:|:-------------------:
+|![](Image/Rigid1.PNG)		|![](Image/Rigid2.PNG)
+
+*** Wind
+
+TODO: add pic here
+
+*** Pins
+
+![](Image/Pins.PNG)
+
+TODO: movable pin gif.
 
 #### Implementation
 
