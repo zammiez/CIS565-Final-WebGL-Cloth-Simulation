@@ -173,6 +173,8 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
       a_position: 0,
       a_trytry: 1,
   };
+  var pos_fbo;
+  var pos_tex;
 
   function createProgram () {
 
@@ -203,7 +205,7 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
       'precision ' + renderer.getPrecision() + ' float;',
       'varying vec4 v_prevpos;',
       'void main() {',
-        'gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);',
+        'gl_FragColor = vec4(v_prevpos.xyz, 1.0);',
         //'gl_Color = vec4(1.0, 1.0, 1.0, 1.0);',
       '}',
     ].join('\n'));
@@ -243,6 +245,19 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
       return null;
     }
 
+    pos_fbo = gl.createFramebuffer();
+    pos_tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, pos_tex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, 50, 50, 0, gl.RGBA, gl.FLOAT, null);//!!!TODO: clothsize
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, pos_fbo);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, pos_tex, 0);
+
+
     return program;
   };
 
@@ -263,6 +278,7 @@ GPGPU2.SimulationShader2 = function (renderer,c_w,c_h) {
   var timerValue = 0;
   var cWidth = c_w;
   var cHeight = c_h;
+
 
   return {
     program: program,
